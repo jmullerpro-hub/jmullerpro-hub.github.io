@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SnowLine – Ski Tracker & GPS</title>
+<meta name="description" content="Revis chaque descente en 3D, vois ta vitesse tracée sur la montagne et défie tes amis. SnowLine suit ta journée de ski tout seul, sur iPhone et Apple Watch.">
+<meta name="theme-color" content="#050a14">
+<meta name="apple-itunes-app" content="app-id=6756065022">
+<meta property="og:title" content="SnowLine – Ski Tracker & GPS">
+<meta property="og:description" content="Ta journée de ski, comme tu ne l'as jamais vue. Replay 3D, vitesse sur la carte, alerte de chute, Apple Watch.">
+<meta property="og:image" content="assets/og.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+:root{
+  --bg:#050a14; --bg2:#0a1a2e; --ink:#f4f8ff; --ink2:#a9bbd6; --ink3:#6f84a3;
+  --cyan:#3fc8ff; --ice:#9fe3ff; --warm:#ffb347; --red:#ff5a5a;
+  --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.09); --line:rgba(255,255,255,.12);
+  --r:28px; --max:1180px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,Arial,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(var(--max),100% - 32px);margin-inline:auto}
+.display{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Arial,sans-serif;letter-spacing:-.035em;line-height:1.02;font-weight:700}
+.eyebrow{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+.lead{color:var(--ink2);font-size:clamp(17px,1.6vw,20px)}
+
+/* Fond : neige lente + halo */
+.sky{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(1100px 700px at 75% -10%,rgba(63,200,255,.20),transparent 60%),
+  radial-gradient(900px 600px at 0% 30%,rgba(90,110,255,.13),transparent 60%),
+  linear-gradient(180deg,var(--bg) 0%,var(--bg2) 55%,var(--bg) 100%)}
+.snow{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.55}
+
+/* Barre du haut */
+header{position:sticky;top:0;z-index:20;backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);background:rgba(5,10,20,.55);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em}
+.brand img{width:30px;height:30px;border-radius:8px}
+.nav-r{display:flex;align-items:center;gap:14px}
+.lang{border:1px solid var(--line);background:var(--glass);color:var(--ink2);border-radius:999px;padding:6px 12px;font:600 13px/1 inherit;cursor:pointer}
+.lang:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:9px 16px;font-weight:600;font-size:15px;background:linear-gradient(180deg,#5fd3ff,#1f9fe0);color:#02101d;box-shadow:0 8px 30px rgba(63,200,255,.35)}
+.btn:hover{filter:brightness(1.08)}
+
+/* Héros */
+.hero{padding:clamp(48px,8vw,110px) 0 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(44px,7vw,92px);margin:16px 0 22px}
+.hero h1 .grad{background:linear-gradient(100deg,#fff 10%,var(--ice) 45%,var(--cyan) 70%,#7c8cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{max-width:540px}
+.cta{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:34px}
+.store{display:inline-flex;align-items:center;gap:12px;padding:12px 22px 12px 18px;border-radius:16px;background:#000;border:1px solid rgba(255,255,255,.28);box-shadow:0 10px 40px rgba(0,0,0,.45);transition:transform .2s}
+.store:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.5)}
+.store svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.store small{display:block;font-size:11.5px;color:#cfd8e6;line-height:1.1}
+.store b{display:block;font-size:20px;letter-spacing:-.01em;line-height:1.15}
+.founder-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(63,200,255,.35);background:rgba(63,200,255,.08);color:var(--ice);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600}
+.founder-pill i{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.stage{position:relative;display:flex;justify-content:center;min-height:560px}
+.stage .glow{position:absolute;inset:8% 10%;background:radial-gradient(closest-side,rgba(63,200,255,.45),transparent);filter:blur(40px)}
+.phone{position:relative;width:min(300px,62vw);filter:drop-shadow(0 40px 80px rgba(0,0,0,.6))}
+.phone.back{position:absolute;width:min(250px,50vw);opacity:.9}
+.phone.back.l{left:2%;top:70px;transform:rotate(-7deg)}
+.phone.back.r{right:2%;top:90px;transform:rotate(7deg)}
+.phone .frame{border-radius:44px;padding:9px;background:linear-gradient(145deg,#2a3346,#0c1220 60%,#2b3548);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.phone .frame img{border-radius:36px}
+
+/* Bande de chiffres */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:30px 0 20px}
+.stat{padding:22px;border-radius:22px;background:var(--glass);border:1px solid var(--line);text-align:center;backdrop-filter:blur(12px)}
+.stat b{display:block;font-size:clamp(28px,3.2vw,40px);letter-spacing:-.03em}
+.stat span{color:var(--ink3);font-size:14px}
+
+/* Offre fondateurs */
+.offer{margin:70px 0;border-radius:36px;padding:clamp(28px,5vw,56px);position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(63,200,255,.16),rgba(124,140,255,.10) 55%,rgba(255,255,255,.04));border:1px solid rgba(159,227,255,.28)}
+.offer:after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(closest-side,rgba(63,200,255,.35),transparent);filter:blur(10px)}
+.offer h2{font-size:clamp(30px,4.4vw,54px);margin:12px 0 14px;max-width:780px}
+.offer p{color:var(--ink2);max-width:640px}
+.dates{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px;position:relative;z-index:1}
+.date{padding:14px 18px;border-radius:18px;background:rgba(5,10,20,.45);border:1px solid var(--line)}
+.date small{display:block;color:var(--ink3);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.date b{font-size:20px}
+
+/* Fonctions */
+.hero>*,.feature>*{min-width:0}
+.feature{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center;padding:clamp(50px,8vw,100px) 0;border-top:1px solid rgba(255,255,255,.05)}
+.feature.rev .text{order:2}
+.feature h2{font-size:clamp(34px,4.8vw,60px);margin:14px 0 18px;overflow-wrap:break-word}
+.feature ul{list-style:none;margin-top:22px;display:grid;gap:10px}
+.feature li{display:flex;gap:12px;color:var(--ink2)}
+.feature li:before{content:"";flex:none;width:6px;height:6px;margin-top:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.feature .media{display:flex;justify-content:center;position:relative}
+.feature .media:before{content:"";position:absolute;inset:10% 15%;background:radial-gradient(closest-side,var(--tint,rgba(63,200,255,.35)),transparent);filter:blur(50px)}
+.feature .phone{width:min(300px,70vw)}
+.note{margin-top:18px;font-size:14px;color:var(--ink3)}
+.watch{width:min(230px,55vw);border-radius:56px;padding:10px;background:linear-gradient(145deg,#39404f,#0d121d 60%,#2f3747);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),0 40px 80px rgba(0,0,0,.55);position:relative}
+.watch img{border-radius:46px}
+
+/* Grille de cartes */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px 0 90px}
+.card{padding:28px;border-radius:26px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px)}
+.card h3{font-size:21px;letter-spacing:-.02em;margin:14px 0 8px}
+.card p{color:var(--ink2);font-size:15.5px}
+.ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--glass2);border:1px solid var(--line)}
+.ico svg{width:22px;height:22px;stroke:var(--ice);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Fin */
+.final{text-align:center;padding:90px 0 110px}
+.final h2{font-size:clamp(38px,6vw,76px);margin:14px auto 18px;max-width:900px}
+.final .cta{justify-content:center}
+footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(--ink3);font-size:14px}
+.foot{display:flex;flex-wrap:wrap;gap:18px 28px;justify-content:space-between;align-items:center}
+.foot nav{display:flex;flex-wrap:wrap;gap:18px}
+.foot a:hover{color:var(--ink)}
+
+/* Apparition au défilement */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.snow{display:none}}
+
+@media (max-width:900px){
+  .hero,.feature{grid-template-columns:1fr}
+  .feature.rev .text{order:0}
+  .stage{min-height:480px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .cards{grid-template-columns:1fr}
+  .nav .btn{display:none}
+}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<canvas class="snow" id="snow"></canvas>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#"><img src="assets/icon.png" alt=""> SnowLine</a>
+    <div class="nav-r">
+      <button class="lang" id="lang" type="button" aria-label="Changer de langue">EN</button>
+      <a class="btn" href="https://apps.apple.com/app/id6756065022" data-i18n="get">Télécharger</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Héros -->
+  <section class="hero">
+    <div class="reveal">
+      <span class="founder-pill"><i></i><span data-i18n="pill">Offre fondateurs jusqu'au 30 janvier 2027</span></span>
+      <h1 class="display"><span data-i18n="h1a">Ta journée de ski,</span><br><span class="grad" data-i18n="h1b">comme tu ne l'as jamais vue.</span></h1>
+      <p class="lead" data-i18n="lead">Replay 3D de chaque descente, vitesse tracée sur la montagne, alerte de chute et classement entre amis. SnowLine suit tout, seul, pendant que ton iPhone reste dans ta poche.</p>
+      <div class="cta">
+        <a class="store" href="https://apps.apple.com/app/id6756065022"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg><span><small data-i18n="st1">Télécharger sur</small><b>App Store</b></span></a>
+        <span class="lead" style="font-size:15px" data-i18n="free">Gratuit · iPhone, Apple Watch et iPad</span>
+      </div>
+    </div>
+    <div class="stage reveal">
+      <div class="glow"></div>
+      <div class="phone back l"><div class="frame"><img data-src="model3d" alt=""></div></div>
+      <div class="phone back r"><div class="frame"><img data-src="speedmap" alt=""></div></div>
+      <div class="phone"><div class="frame"><img data-src="dashboard" alt="Tableau de bord SnowLine"></div></div>
+    </div>
+  </section>
+
+  <section class="stats reveal">
+    <div class="stat"><b>0</b><span data-i18n="s1">compte à créer</span></div>
+    <div class="stat"><b>0</b><span data-i18n="s2">publicité ni pisteur</span></div>
+    <div class="stat"><b>7</b><span data-i18n="s3">langues</span></div>
+    <div class="stat"><b>174</b><span data-i18n="s4">pays</span></div>
+  </section>
+
+  <!-- Offre fondateurs -->
+  <section class="offer reveal" id="offre">
+    <span class="eyebrow" data-i18n="oEyebrow">Membres fondateurs</span>
+    <h2 class="display" data-i18n="oTitle">Installe-la avant le 30 janvier 2027. Premium t'est offert pendant trois saisons.</h2>
+    <p data-i18n="oText">Merci d'être là dès le début. Toutes les fonctions Premium, actuelles et à venir, sont offertes aux skieurs qui installent SnowLine avant la date limite, jusqu'à la fin de la saison 2028-2029. Rien à faire : l'app le détecte toute seule.</p>
+    <div class="dates">
+      <div class="date"><small data-i18n="d1">Installer avant le</small><b data-i18n="d1v">30 janvier 2027</b></div>
+      <div class="date"><small data-i18n="d2">Premium offert jusqu'au</small><b data-i18n="d2v">30 juin 2029</b></div>
+    </div>
+  </section>
+
+  <!-- Tableau de bord -->
+  <section class="feature">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f1e">Tableau de bord</span>
+      <h2 class="display" data-i18n="f1t">Tout ton ski en un coup d'œil.</h2>
+      <p class="lead" data-i18n="f1p">Descentes et remontées détectées seules grâce au GPS et au baromètre. Tu skies, SnowLine compte.</p>
+      <ul>
+        <li data-i18n="f1a">Vitesse max, dénivelé, distance, temps de descente, nombre de runs</li>
+        <li data-i18n="f1b">Météo de la station, en km/h et °C ou en mph et °F</li>
+        <li data-i18n="f1c">Historique jour par jour et courbes de ta journée</li>
+      </ul>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="dashboard" alt=""></div></div></div>
+  </section>
+
+  <!-- 3D -->
+  <section class="feature rev" style="--tint:rgba(255,120,80,.30)">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f2e">Replay 3D</span>
+      <h2 class="display" data-i18n="f2t">Revis chaque descente sur le vrai relief.</h2>
+      <p class="lead" data-i18n="f2p">Une caméra te suit sur la montagne, ta vitesse s'affiche en direct. Pose la maquette 3D de ta piste sur la table et fais-la tourner du bout des doigts.</p>
+      <ul>
+        <li data-i18n="f2a">Relief réel, trace colorée du bleu au rouge selon ta vitesse</li>
+        <li data-i18n="f2b">Vues Amont, Poursuite et Vue haute</li>
+        <li data-i18n="f2c">Maquette 3D en réalité augmentée</li>
+      </ul>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="model3d" alt=""></div></div></div>
+  </section>
+
+  <!-- Vitesse -->
+  <section class="feature" style="--tint:rgba(255,200,60,.28)">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f3e">Carte</span>
+      <h2 class="display" data-i18n="f3t">Ta vitesse, tracée sur la montagne.</h2>
+      <p class="lead" data-i18n="f3p">Du bleu au rouge, virage après virage, avec les pistes et remontées de la station et leurs noms.</p>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="speedmap" alt=""></div></div></div>
+  </section>
+
+  <!-- Écran verrouillé + Watch -->
+  <section class="feature rev">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f4e">Écran verrouillé · Apple Watch</span>
+      <h2 class="display" data-i18n="f4t">Sans sortir le téléphone.</h2>
+      <p class="lead" data-i18n="f4p">Ta session en direct sur l'écran verrouillé et dans la Dynamic Island. Au poignet, ta vitesse, ton altitude et ta distance d'un coup d'œil.</p>
+      <ul>
+        <li data-i18n="f4a">Live Activity et Dynamic Island</li>
+        <li data-i18n="f4b">Cadran Apple Watch</li>
+        <li data-i18n="f4c">Widgets pour l'écran d'accueil</li>
+      </ul>
+    </div>
+    <div class="media reveal" style="gap:24px;align-items:flex-end">
+      <div class="phone" style="width:min(270px,58vw)"><div class="frame"><img data-src="lock" alt=""></div></div>
+      <div class="watch" style="width:min(170px,34vw);margin-bottom:30px"><img data-src="watch" alt=""></div>
+    </div>
+  </section>
+
+  <!-- Chute -->
+  <section class="feature" style="--tint:rgba(255,90,90,.32)">
+    <div class="text reveal">
+      <span class="eyebrow" style="color:#ff8a8a" data-i18n="f5e">Sécurité</span>
+      <h2 class="display" data-i18n="f5t">Une chute ? SnowLine s'en rend compte.</h2>
+      <p class="lead" data-i18n="f5p">Après un choc suivi d'une immobilité, SnowLine te demande si tout va bien. Sinon, un geste suffit pour appeler les secours ou prévenir un proche.</p>
+      <p class="note" data-i18n="f5n">Fonction à activer, avec ton accord. C'est une aide : elle peut se tromper et ne remplace jamais les secours.</p>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="fall" alt=""></div></div></div>
+  </section>
+
+  <!-- Amis -->
+  <section class="feature rev" style="--tint:rgba(160,120,255,.30)">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f6e">Groupes</span>
+      <h2 class="display" data-i18n="f6t">Défie tes amis.</h2>
+      <p class="lead" data-i18n="f6p">Crée un groupe, invite tes amis via iCloud et comparez vitesse max, dénivelé et descentes, sur la journée ou tout le séjour.</p>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="groups" alt=""></div></div></div>
+  </section>
+
+  <!-- Stations -->
+  <section class="feature">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f7e">Découvrir</span>
+      <h2 class="display" data-i18n="f7t">Les stations du monde entier.</h2>
+      <p class="lead" data-i18n="f7p">Pistes et remontées de milliers de domaines, avec leur nom et leur couleur. Touche une piste pour voir son profil, même depuis ton canapé.</p>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="discover" alt=""></div></div></div>
+  </section>
+
+  <!-- Confiance -->
+  <section class="cards">
+    <div class="card reveal">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+      <h3 data-i18n="c1t">Tes données restent à toi</h3>
+      <p data-i18n="c1p">Pas de compte, pas de serveur. Tes traces et tes données de santé restent sur ton iPhone.</p>
+    </div>
+    <div class="card reveal">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div>
+      <h3 data-i18n="c2t">Apple Santé</h3>
+      <p data-i18n="c2p">Tes journées de ski enregistrées comme séances, sans doublon avec ton Apple Watch.</p>
+    </div>
+    <div class="card reveal">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 20l6-11 4 6 3-4 5 9z"/><path d="M14 6l1.2-2 1.3 2"/></svg></div>
+      <h3 data-i18n="c3t">Bulletins officiels</h3>
+      <p data-i18n="c3p">Le risque d'avalanche vient uniquement des bulletins officiels, relayés sans modification.</p>
+    </div>
+  </section>
+
+  <section class="final reveal">
+    <span class="eyebrow" data-i18n="fe">La saison arrive</span>
+    <h2 class="display" data-i18n="ft">Prêt pour ta première descente ?</h2>
+    <p class="lead" data-i18n="fp">Gratuit sur l'App Store. Premium offert aux membres fondateurs.</p>
+    <div class="cta"><a class="store" href="https://apps.apple.com/app/id6756065022"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg><span><small data-i18n="st1">Télécharger sur</small><b>App Store</b></span></a></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Jeremy Muller · SnowLine</span>
+    <nav>
+      <a href="https://docs.google.com/document/d/e/2PACX-1vSnsoZgtYN-3_lkDyb7fTX2PXovybGNBqEwcS3BSnWyj8yvfw0NoI3WBuFnuqIcidlgwled6H_ZYViv/pub" data-i18n="l1">Confidentialité</a>
+      <a href="https://docs.google.com/document/d/e/2PACX-1vSuId4iDYalrUUMW-_-4UnKHNpwdC1z_Zo_DcnJ-lu4Xt_M_YsaD40OxRnaVyRq4CjM1W4uklYg_Fkj/pub" data-i18n="l2">Aide</a>
+      <a href="mailto:snowlineapp@icloud.com">snowlineapp@icloud.com</a>
+    </nav>
+    <span style="font-size:12.5px" data-i18n="legal">Apple, iPhone, Apple Watch et App Store sont des marques d'Apple Inc. Cartes : © OpenStreetMap contributors.</span>
+  </div>
+</footer>
+
+<script>
+const EN={
+  get:"Download",st1:"Download on the",pill:"Founders offer until January 30, 2027",h1a:"Your ski day,",h1b:"like you've never seen it.",
+  lead:"3D replay of every run, your speed drawn on the mountain, fall alert and a leaderboard with friends. SnowLine tracks it all on its own while your iPhone stays in your pocket.",
+  free:"Free · iPhone, Apple Watch and iPad",s1:"account to create",s2:"ads or trackers",s3:"languages",s4:"countries",
+  oEyebrow:"Founding members",oTitle:"Install it before January 30, 2027. Premium is on us for three seasons.",
+  oText:"Thanks for being here from the start. Every Premium feature, current and future, is free for skiers who install SnowLine before the deadline, until the end of the 2028-29 season. Nothing to do: the app detects it on its own.",
+  d1:"Install before",d1v:"January 30, 2027",d2:"Premium free until",d2v:"June 30, 2029",
+  f1e:"Dashboard",f1t:"Your whole day at a glance.",f1p:"Runs and lifts detected on their own with GPS and the barometer. You ski, SnowLine counts.",
+  f1a:"Top speed, vertical, distance, descent time, number of runs",f1b:"Resort weather in mph and °F or km/h and °C",f1c:"Day-by-day history and charts of your day",
+  f2e:"3D replay",f2t:"Relive every run on real terrain.",f2p:"A camera follows you down the mountain with your speed live. Put a 3D model of your run on the table and spin it with your fingertips.",
+  f2a:"Real terrain, a blue-to-red trail by speed",f2b:"Uphill, Chase and Top views",f2c:"3D model in augmented reality",
+  f3e:"Map",f3t:"Your speed, drawn on the mountain.",f3p:"Blue to red, turn after turn, with the resort's runs and lifts and their names.",
+  f4e:"Lock Screen · Apple Watch",f4t:"No need to take your phone out.",f4p:"Your live session on the Lock Screen and in the Dynamic Island. On your wrist: speed, altitude and distance at a glance.",
+  f4a:"Live Activity and Dynamic Island",f4b:"Apple Watch dial",f4c:"Home Screen widgets",
+  f5e:"Safety",f5t:"A fall? SnowLine notices.",f5p:"After an impact followed by no movement, SnowLine asks if you're OK. If not, one tap calls emergency services or alerts a loved one.",
+  f5n:"Opt-in, with your consent. It is an aid: it can be wrong and never replaces emergency services.",
+  f6e:"Groups",f6t:"Challenge your friends.",f6p:"Create a group, invite friends through iCloud and compare top speed, vertical and runs, for the day or the whole trip.",
+  f7e:"Discover",f7t:"Ski areas worldwide.",f7p:"Runs and lifts of thousands of ski areas, with their names and colours. Tap a run to see its profile, even from your couch.",
+  c1t:"Your data stays yours",c1p:"No account, no server. Your tracks and health data stay on your iPhone.",
+  c2t:"Apple Health",c2p:"Your ski days saved as workouts, without duplicating your Apple Watch.",
+  c3t:"Official bulletins",c3p:"Avalanche risk comes only from official bulletins, relayed unchanged.",
+  fe:"The season is coming",ft:"Ready for your first run?",fp:"Free on the App Store. Premium on us for founding members.",
+  l1:"Privacy",l2:"Help",legal:"Apple, iPhone, Apple Watch and App Store are trademarks of Apple Inc. Maps: © OpenStreetMap contributors."
+};
+const FR={}; document.querySelectorAll("[data-i18n]").forEach(e=>FR[e.dataset.i18n]=e.textContent);
+function setLang(l){
+  const T=l==="en"?EN:FR;
+  document.documentElement.lang=l;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{const v=T[e.dataset.i18n]; if(v) e.textContent=v;});
+  document.querySelectorAll("img[data-src]").forEach(i=>i.src="assets/"+i.dataset.src+"-"+l+".webp");
+  document.getElementById("lang").textContent=l==="en"?"FR":"EN";
+  try{localStorage.setItem("snowline-lang",l)}catch(e){}
+}
+let saved=null; try{saved=localStorage.getItem("snowline-lang")}catch(e){}
+setLang(saved||((navigator.language||"fr").toLowerCase().startsWith("fr")?"fr":"en"));
+document.getElementById("lang").onclick=()=>setLang(document.documentElement.lang==="en"?"fr":"en");
+
+// Apparition au défilement
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
+
+// Neige discrète
+(()=>{const c=document.getElementById("snow"),x=c.getContext("2d");let W,H,f=[];
+ function size(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;f=Array.from({length:Math.min(90,innerWidth/12)},()=>({x:Math.random()*W,y:Math.random()*H,r:(Math.random()*1.6+.4)*devicePixelRatio,s:(Math.random()*.4+.15)*devicePixelRatio,d:Math.random()*6.28}))}
+ function tick(){x.clearRect(0,0,W,H);x.fillStyle="rgba(220,240,255,.8)";for(const p of f){p.y+=p.s;p.d+=.01;p.x+=Math.sin(p.d)*.3;if(p.y>H){p.y=-5;p.x=Math.random()*W}x.beginPath();x.arc(p.x,p.y,p.r,0,6.28);x.fill()}requestAnimationFrame(tick)}
+ addEventListener("resize",size);size();tick();})();
+</script>
+</body>
+</html>
