@@ -9,7 +9,10 @@
 <meta name="apple-itunes-app" content="app-id=6756065022">
 <meta property="og:title" content="SnowLine – Ski Tracker & GPS">
 <meta property="og:description" content="Ta journée de ski, comme tu ne l'as jamais vue. Replay 3D, vitesse sur la carte, alerte de chute, Apple Watch.">
-<meta property="og:image" content="assets/og.jpg">
+<meta property="og:image" content="https://jmullerpro-hub.github.io/assets/og.jpg">
+<meta property="og:url" content="https://jmullerpro-hub.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://jmullerpro-hub.github.io/">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
@@ -77,6 +80,10 @@ header{position:sticky;top:0;z-index:20;backdrop-filter:saturate(160%) blur(18px
 .stat b{display:block;font-size:clamp(28px,3.2vw,40px);letter-spacing:-.03em}
 .stat span{color:var(--ink3);font-size:14px}
 
+.reel{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center;padding:clamp(40px,7vw,90px) 0}
+.reel h2{font-size:clamp(34px,4.8vw,60px);margin:14px 0 18px}
+.reel video{width:min(360px,80vw);aspect-ratio:9/16;border-radius:34px;background:#07101f;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08);display:block;margin:auto}
+@media (max-width:900px){.reel{grid-template-columns:1fr}}
 /* Offre fondateurs */
 .offer{margin:70px 0;border-radius:36px;padding:clamp(28px,5vw,56px);position:relative;overflow:hidden;
   background:linear-gradient(135deg,rgba(63,200,255,.16),rgba(124,140,255,.10) 55%,rgba(255,255,255,.04));border:1px solid rgba(159,227,255,.28)}
@@ -174,6 +181,16 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
     <div class="stat"><b>0</b><span data-i18n="s2">publicité ni pisteur</span></div>
     <div class="stat"><b>7</b><span data-i18n="s3">langues</span></div>
     <div class="stat"><b>174</b><span data-i18n="s4">pays</span></div>
+  </section>
+
+  <!-- Vidéo -->
+  <section class="reel">
+    <div class="reveal">
+      <span class="eyebrow" data-i18n="ve">En action</span>
+      <h2 class="display" data-i18n="vt">Ta descente, comme filmée par un drone.</h2>
+      <p class="lead" data-i18n="vp">La caméra te suit sur le vrai relief, virage après virage. Puis ta piste devient une maquette 3D que tu fais tourner du bout des doigts.</p>
+    </div>
+    <div class="reveal"><video id="reel" muted loop playsinline preload="none" poster="assets/reel-poster.jpg" aria-label="Vidéo de démonstration de SnowLine"><source src="assets/reel-fr.mp4" type="video/mp4"></video></div>
   </section>
 
   <!-- Offre fondateurs -->
@@ -317,7 +334,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
 
 <script>
 const EN={
-  get:"Download",st1:"Download on the",pill:"Founders offer until January 30, 2027",h1a:"Your ski day,",h1b:"like you've never seen it.",
+  get:"Download",ve:"In action",vt:"Your run, as if filmed by a drone.",vp:"The camera follows you on real terrain, turn after turn. Then your run becomes a 3D model you spin with your fingertips.",st1:"Download on the",pill:"Founders offer until January 30, 2027",h1a:"Your ski day,",h1b:"like you've never seen it.",
   lead:"3D replay of every run, your speed drawn on the mountain, fall alert and a leaderboard with friends. SnowLine tracks it all on its own while your iPhone stays in your pocket.",
   free:"Free · iPhone, Apple Watch and iPad",s1:"account to create",s2:"ads or trackers",s3:"languages",s4:"countries",
   oEyebrow:"Founding members",oTitle:"Install it before January 30, 2027. Premium is on us for three seasons.",
@@ -356,6 +373,10 @@ document.getElementById("lang").onclick=()=>setLang(document.documentElement.lan
 // Apparition au défilement
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
+
+// Vidéo : ne se charge et ne joue que lorsqu'elle est à l'écran
+(()=>{const v=document.getElementById("reel");if(!v)return;
+ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){if(v.preload!=="auto"){v.preload="auto";v.load()}v.play().catch(()=>{})}else v.pause()}),{threshold:.35}).observe(v);})();
 
 // Neige discrète
 (()=>{const c=document.getElementById("snow"),x=c.getContext("2d");let W,H,f=[];
