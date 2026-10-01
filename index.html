@@ -59,6 +59,10 @@ header{position:sticky;top:0;z-index:20;backdrop-filter:saturate(160%) blur(18px
 .nav{display:flex;align-items:center;justify-content:space-between;height:60px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em}
 .brand img{width:30px;height:30px;border-radius:8px}
+.brand .word{position:relative;display:inline-block}
+/* Montagne de la marque, comme dans l'app : pic (64 % de sa largeur) au-dessus du « L » (56,5 % du mot) */
+.brand .word svg{position:absolute;width:24px;height:8.2px;left:calc(56.5% - 15.4px);top:-7px;overflow:visible;filter:drop-shadow(0 0 3px rgba(140,217,255,.55))}
+
 .nav-r{display:flex;align-items:center;gap:14px}
 .lang{border:1px solid var(--line);background:var(--glass);color:var(--ink2);border-radius:999px;padding:6px 12px;font:600 13px/1 inherit;cursor:pointer}
 .lang:hover{color:var(--ink)}
@@ -190,7 +194,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="#"><img src="assets/icon.png" alt=""> SnowLine</a>
+    <a class="brand" href="#"><img src="assets/icon.png" alt=""> <span class="word">SnowLine<svg viewBox="0 0 100 34" aria-hidden="true"><defs><linearGradient id="mk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="url(#mk)"/><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
     <div class="nav-r">
       <button class="lang" id="lang" type="button" aria-label="Changer de langue">EN</button>
       <a class="btn" href="https://apps.apple.com/app/id6756065022" data-i18n="get">Télécharger</a>
