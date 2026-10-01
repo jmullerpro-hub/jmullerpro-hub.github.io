@@ -113,9 +113,10 @@ header{position:sticky;top:0;z-index:20;backdrop-filter:saturate(160%) blur(18px
 @media (max-width:560px){.tour{grid-template-columns:1fr}}
 .reel-stage{display:flex;justify-content:center;position:relative}
 .reel-stage .glow{position:absolute;inset:6% 4%;background:radial-gradient(closest-side,rgba(63,200,255,.5),transparent);filter:blur(46px)}
-.reel .phone{width:min(340px,74vw)}
+.reel .phone{width:min(330px,72vw)}
 .reel .frame{position:relative}
-.reel video{width:100%;aspect-ratio:9/16;border-radius:36px;background:#07101f;display:block;object-fit:cover}
+.reel video{width:100%;aspect-ratio:720/1560;border-radius:36px;background:#07101f;display:block;object-fit:cover}
+.reel .frame:after{content:"";position:absolute;top:19px;left:50%;transform:translateX(-50%);width:30%;height:26px;border-radius:14px;background:#000;pointer-events:none}
 .sound{position:absolute;right:22px;bottom:22px;display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;cursor:pointer;
   border:1px solid rgba(255,255,255,.22);background:rgba(5,10,20,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   color:#fff;font:600 13px/1 inherit;transition:background .2s}
@@ -246,7 +247,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
     <div class="reel-stage reveal">
       <div class="glow"></div>
       <div class="phone"><div class="frame">
-        <video id="reel" muted loop playsinline preload="metadata" poster="assets/reel-v4-poster.jpg" aria-label="Vidéo de démonstration de SnowLine"><source src="assets/reel-v4-fr.mp4" type="video/mp4"></video>
+        <video id="reel" muted loop playsinline preload="metadata" poster="assets/reel-v5-poster.jpg" aria-label="Vidéo de démonstration de SnowLine"><source src="assets/reel-v5-fr.mp4" type="video/mp4"></video>
         <button class="sound" id="sound" type="button"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/><path class="off" d="M16 9l5 6M21 9l-5 6"/></svg><span class="off" data-i18n="snd1">Activer le son</span><span class="on" data-i18n="snd2">Couper le son</span></button>
       </div></div>
     </div>
