@@ -242,12 +242,13 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
         <li data-t="33.12"><b data-i18n="ch4">Alerte de chute</b><span data-i18n="cd4">Tes proches prévenus si tu ne réponds pas</span></li>
         <li data-t="35.88"><b data-i18n="ch5">Classement entre amis</b><span data-i18n="cd5">Qui a le plus de dénivelé aujourd'hui ?</span></li>
         <li data-t="38.64"><b data-i18n="ch6">Stations du monde</b><span data-i18n="cd6">Pistes et remontées de milliers de domaines</span></li>
+        <li data-t="42.32"><b data-i18n="ch11">Partage en vidéo</b><span data-i18n="cd11">Ta descente en story, en un toucher</span></li>
       </ol>
     </div>
     <div class="reel-stage reveal">
       <div class="glow"></div>
       <div class="phone"><div class="frame">
-        <video id="reel" muted loop playsinline preload="metadata" poster="assets/reel-v5-poster.jpg" aria-label="Vidéo de démonstration de SnowLine"><source src="assets/reel-v5-fr.mp4" type="video/mp4"></video>
+        <video id="reel" muted loop playsinline preload="metadata" poster="assets/reel-v6-poster.jpg" aria-label="Vidéo de démonstration de SnowLine"><source src="assets/reel-v6-fr.mp4" type="video/mp4"></video>
         <button class="sound" id="sound" type="button"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/><path class="off" d="M16 9l5 6M21 9l-5 6"/></svg><span class="off" data-i18n="snd1">Activer le son</span><span class="on" data-i18n="snd2">Couper le son</span></button>
       </div></div>
     </div>
@@ -343,8 +344,23 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
     <div class="media reveal"><div class="phone"><div class="frame"><img data-src="groups" alt=""></div></div></div>
   </section>
 
+  <!-- Partage vidéo -->
+  <section class="feature" style="--tint:rgba(255,90,160,.28)">
+    <div class="text reveal">
+      <span class="eyebrow" data-i18n="f8e">Nouveau · Partage</span>
+      <h2 class="display" data-i18n="f8t">Ta plus belle descente, en story.</h2>
+      <p class="lead" data-i18n="f8p">Un toucher sur « Vidéo » et SnowLine filme le replay 3D de ta descente : 20 secondes sur le vrai relief, avec ta vitesse sur la jauge. Prête à partager.</p>
+      <ul>
+        <li data-i18n="f8a">Story ou Reel Instagram, WhatsApp, Messages</li>
+        <li data-i18n="f8b">Enregistrée dans Photos pour la garder</li>
+        <li data-i18n="f8c">Montre à tes amis ton passage le plus rapide</li>
+      </ul>
+    </div>
+    <div class="media reveal"><div class="phone"><div class="frame"><img data-src="share" alt=""></div></div></div>
+  </section>
+
   <!-- Stations -->
-  <section class="feature">
+  <section class="feature rev">
     <div class="text reveal">
       <span class="eyebrow" data-i18n="f7e">Découvrir</span>
       <h2 class="display" data-i18n="f7t">Les stations du monde entier.</h2>
@@ -394,7 +410,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 50px;color:var(
 
 <script>
 const EN={
-  get:"Download",ve:"In action",vt:"Your run, as if filmed by a drone.",vk:"And everything else, in 50 seconds:",ch1:"3D chase cam",cd1:"The camera follows every turn",ch2:"Terrain model",cd2:"Your mountain in 3D, skimming the ridges",ch7:"Dashboard",cd7:"Speed, vertical, weather, health",ch8:"Today's runs",cd8:"Every run: vertical, distance, speed",ch9:"Daily summary",cd9:"Tap a ring to revisit any day",ch10:"Lock Screen",cd10:"Your live session, without opening the app",ch3:"Speed on the map",cd3:"Every run colored by your speed",ch4:"Fall alert",cd4:"Your people alerted if you don't respond",ch5:"Friends leaderboard",cd5:"Who has the most vertical today?",ch6:"Resorts worldwide",cd6:"Runs and lifts of thousands of ski areas",snd1:"Sound on",snd2:"Sound off",vp:"The camera follows you on real terrain, turn after turn. Then your run becomes a 3D model you spin with your fingertips.",st1:"Download on the",pill:"Founders offer until January 30, 2027",h1a:"Your ski day,",h1b:"like you've never seen it.",
+  get:"Download",ve:"In action",vt:"Your run, as if filmed by a drone.",vk:"And everything else, in 50 seconds:",ch1:"3D chase cam",cd1:"The camera follows every turn",ch2:"Terrain model",cd2:"Your mountain in 3D, skimming the ridges",ch7:"Dashboard",cd7:"Speed, vertical, weather, health",ch8:"Today's runs",cd8:"Every run: vertical, distance, speed",ch9:"Daily summary",cd9:"Tap a ring to revisit any day",ch10:"Lock Screen",ch11:"Video sharing",cd11:"Your run as a story, in one tap",cd10:"Your live session, without opening the app",ch3:"Speed on the map",cd3:"Every run colored by your speed",ch4:"Fall alert",cd4:"Your people alerted if you don't respond",ch5:"Friends leaderboard",cd5:"Who has the most vertical today?",ch6:"Resorts worldwide",cd6:"Runs and lifts of thousands of ski areas",snd1:"Sound on",snd2:"Sound off",vp:"The camera follows you on real terrain, turn after turn. Then your run becomes a 3D model you spin with your fingertips.",st1:"Download on the",pill:"Founders offer until January 30, 2027",h1a:"Your ski day,",h1b:"like you've never seen it.",
   lead:"3D replay of every run, your speed drawn on the mountain, fall alert and a leaderboard with friends. SnowLine tracks it all on its own while your iPhone stays in your pocket.",
   free:"Free · iPhone, Apple Watch and iPad",s1:"account to create",s2:"ads or trackers",s3:"languages",s4:"countries",
   oEyebrow:"Founding members",oTitle:"Install it before January 30, 2027. Premium is on us for three seasons.",
@@ -409,7 +425,7 @@ const EN={
   f4a:"Live Activity and Dynamic Island",f4b:"Apple Watch dial",f4c:"Home Screen widgets",
   f5e:"Safety",f5t:"A fall? SnowLine notices.",f5p:"After an impact followed by no movement, SnowLine asks if you're OK. If not, one tap calls emergency services or alerts a loved one.",
   f5n:"Opt-in, with your consent. It is an aid: it can be wrong and never replaces emergency services.",
-  f6e:"Groups",f6t:"Challenge your friends.",f6p:"Create a group, invite friends through iCloud and compare top speed, vertical and runs, for the day or the whole trip.",
+  f8e:"New · Sharing",f8t:"Your best run, in a story.",f8p:"One tap on “Video” and SnowLine films the 3D replay of your run: 20 seconds on real terrain, with your speed on the gauge. Ready to share.",f8a:"Instagram Story or Reel, WhatsApp, Messages",f8b:"Saved to Photos to keep it",f8c:"Show your friends your fastest run",f6e:"Groups",f6t:"Challenge your friends.",f6p:"Create a group, invite friends through iCloud and compare top speed, vertical and runs, for the day or the whole trip.",
   f7e:"Discover",f7t:"Ski areas worldwide.",f7p:"Runs and lifts of thousands of ski areas, with their names and colours. Tap a run to see its profile, even from your couch.",
   c1t:"Your data stays yours",c1p:"No account, no server. Your tracks and health data stay on your iPhone.",
   c2t:"Apple Health",c2p:"Your ski days saved as workouts, without duplicating your Apple Watch.",
@@ -440,7 +456,7 @@ document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
  const b=document.getElementById("sound");
  if(b)b.onclick=()=>{v.muted=!v.muted;if(!v.muted){v.volume=.8;v.play().catch(()=>{})}b.classList.toggle("is-on",!v.muted)};
  const items=[...document.querySelectorAll("#tour li")];
- const cut=[[0,0],[7.36,1],[11.04,0],[18.4,2],[21.16,3],[24.84,4],[27.6,5],[30.36,6],[33.12,7],[35.88,8],[38.64,9],[42.32,1],[46,-1]];
+ const cut=[[0,0],[7.36,1],[11.04,0],[18.4,2],[21.16,3],[24.84,4],[27.6,5],[30.36,6],[33.12,7],[35.88,8],[38.64,9],[42.32,10],[46,1],[49.68,-1]];
  v.addEventListener("timeupdate",()=>{let k=-1;for(const [t,i] of cut)if(v.currentTime>=t)k=i;items.forEach((li,i)=>li.classList.toggle("on",i===k))});
  // Saut au passage choisi : attend que la vidéo connaisse sa durée (Safari ignore sinon le saut).
  const seek=t=>{const go=()=>{try{v.currentTime=t}catch(e){}v.play().catch(()=>{})};
