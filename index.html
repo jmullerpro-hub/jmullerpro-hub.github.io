@@ -105,16 +105,17 @@ h1,.chap h2,.fnd h2,.final h2,.hs h2{text-wrap:balance}
 .counter span{font-size:14px;color:var(--mut)}
 .bar{position:absolute;left:var(--pad);bottom:clamp(18px,3.4vh,40px);width:min(46vw,540px);height:1px;background:var(--line)}
 .bar i{position:absolute;left:0;top:-.5px;height:2px;width:0;background:var(--speed)}
-.stage{position:absolute;top:0;bottom:0;right:0;width:56vw}
-.panel{position:absolute;left:50%;top:50%;height:min(84vh,820px);aspect-ratio:853/1844;transform:translate(-26%,-50%);overflow:hidden;box-shadow:0 60px 120px -40px rgba(0,0,0,.8)}
-.panel::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,21,40,.35),rgba(7,21,40,0) 40%,rgba(7,21,40,.35))}
-.panel img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;opacity:0;will-change:opacity,transform}
-.dev{position:absolute;left:50%;top:50%;height:min(76vh,740px);aspect-ratio:474/990;transform:translate(-92%,-50%);perspective:1400px}
-.dev .body{position:absolute;inset:0;will-change:transform;filter:drop-shadow(0 46px 50px rgba(0,0,0,.55)) drop-shadow(0 0 70px rgba(45,140,255,.32))}
+.stage{position:absolute;top:0;bottom:0;right:0;width:56vw;--ph:min(76vh,740px)}
+.bgwrap{position:absolute;inset:0;overflow:hidden;background:var(--navy)}
+.bgwrap img{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;opacity:0;filter:blur(16px) saturate(1.08);will-change:opacity,transform}
+.bgwrap::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,10,20,.90) 0,rgba(4,10,20,.62) 42%,rgba(4,10,20,.22) 100%),linear-gradient(180deg,rgba(4,10,20,.35),rgba(4,10,20,0) 30%,rgba(4,10,20,.45))}
+.dev{position:absolute;left:50%;top:50%;height:var(--ph);aspect-ratio:474/990;transform:translate(-50%,-50%)}
+.dev .body{position:absolute;inset:0;filter:drop-shadow(0 34px 46px rgba(0,0,0,.42)) drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 .phone-svg{display:block;width:100%;height:100%;overflow:visible}
-.phone-svg image{transform-box:fill-box;transform-origin:center;opacity:0;will-change:opacity,transform}
-.watch{position:absolute;left:50%;top:50%;width:clamp(120px,13vw,200px);aspect-ratio:512/982;transform:translate(14%,22%);opacity:0;filter:drop-shadow(0 26px 30px rgba(0,0,0,.55))}
-.watch .wscr{position:absolute;left:8.4%;top:24.74%;width:81.25%;height:50.5%;overflow:hidden;border-radius:14%}
+.phone-svg .scr image{opacity:0;will-change:opacity}
+.phone-svg .hl rect{fill:none;stroke:#56ccff;stroke-width:2.4;opacity:0;filter:drop-shadow(0 0 5px rgba(86,204,255,.9))}
+.watch{position:absolute;left:calc(50% + var(--ph)*.2394 + 22px);top:50%;width:clamp(130px,14vw,210px);aspect-ratio:512/582;transform:translateY(-70%);opacity:0;filter:drop-shadow(0 26px 30px rgba(0,0,0,.45))}
+.watch .wscr{position:absolute;left:8.4%;top:7.39%;width:81.25%;height:85.2%;overflow:hidden;border-radius:15% / 13%}
 .watch .wscr img{width:100%;height:100%;object-fit:cover}
 .watch .wf{position:absolute;inset:0;width:100%;height:100%}
 
@@ -122,7 +123,7 @@ h1,.chap h2,.fnd h2,.final h2,.hs h2{text-wrap:balance}
 .film{position:relative;height:300vh;background:var(--ink)}
 .film-pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .giant{position:absolute;left:0;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--serif);font-size:clamp(120px,24vw,420px);line-height:.9;letter-spacing:-.05em;font-weight:400;color:transparent;-webkit-text-stroke:1px rgba(150,195,255,.34);will-change:transform}
-.vf{position:relative;width:min(92vw,calc(84vh * 16 / 9),1560px);aspect-ratio:16/9;will-change:transform;background:#050d1a;overflow:hidden;box-shadow:0 70px 140px -40px rgba(0,0,0,.9),0 0 120px -30px rgba(45,140,255,.4);cursor:pointer}
+.vf{position:relative;width:min(92vw,calc(74vh * 16 / 9),1560px);aspect-ratio:16/9;will-change:transform;background:#050d1a;overflow:hidden;box-shadow:0 70px 140px -40px rgba(0,0,0,.9),0 0 120px -30px rgba(45,140,255,.4);cursor:pointer}
 .vf canvas{display:block;width:100%;height:100%}
 .ctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:clamp(12px,2vw,26px);padding:clamp(34px,5vw,64px) clamp(14px,2.4vw,34px) clamp(12px,1.6vw,22px);background:linear-gradient(180deg,rgba(4,10,20,0),rgba(4,10,20,.78));opacity:0;transition:opacity .4s}
 .vf:hover .ctl,.vf:focus-within .ctl,.vf.touch .ctl{opacity:1}
@@ -133,9 +134,9 @@ h1,.chap h2,.fnd h2,.final h2,.hs h2{text-wrap:balance}
 .scrub i{position:absolute;left:0;top:9px;height:4px;width:0;background:var(--speed)}
 .scrub b{position:absolute;top:5px;width:2px;height:12px;background:rgba(255,255,255,.55);transform:translateX(-1px)}
 @media (min-aspect-ratio:1/1){.giant{display:none}}
-@media (max-aspect-ratio:1/1){.vf{width:auto;height:min(80svh,820px);max-width:92vw;aspect-ratio:9/16}}
-.film-cap{position:absolute;left:var(--pad);bottom:clamp(26px,5vh,56px);max-width:260px}
-.film-cap2{position:absolute;right:var(--pad);bottom:clamp(26px,5vh,56px);text-align:right}
+@media (max-aspect-ratio:1/1){.vf{width:auto;height:min(74svh,820px);max-width:92vw;aspect-ratio:9/16}}
+.film-cap{position:absolute;left:var(--pad);bottom:clamp(14px,3.4vh,36px);max-width:46vw}
+.film-cap2{position:absolute;right:var(--pad);bottom:clamp(14px,3.4vh,36px);text-align:right;max-width:40vw}
 
 /* ───── galerie horizontale ───── */
 .hs{position:relative;height:340vh;background:linear-gradient(180deg,var(--ink),var(--navy) 18%,var(--navy) 82%,var(--ink))}
@@ -219,19 +220,19 @@ footer small{display:block;margin-top:12px;font-size:12px}
   .cue{display:none}
   .story{height:560vh}
   .st-text{left:0;right:0;width:auto;top:auto;bottom:0;height:46%;padding:0 var(--pad);align-items:flex-start;background:linear-gradient(180deg,rgba(4,10,20,0),rgba(4,10,20,.9) 22%)}
-  .chap{padding-top:26px}
+  .chap{padding-top:26px;left:var(--pad);right:var(--pad)}
   .chap ul{display:none}
   .chap p{font-size:15px}
   .chap h2{font-size:clamp(28px,8vw,38px);margin-bottom:12px}
   .stage{width:100%;height:100%}
-  .panel{left:0;top:0;width:100%;height:100%;aspect-ratio:auto;transform:none}
-  .panel::after{background:linear-gradient(180deg,rgba(7,21,40,.55),rgba(7,21,40,.35))}
-  .dev{left:50%;top:5svh;height:46svh;transform:translateX(-50%)}
-  .watch{left:auto;right:5%;top:30svh;width:92px;transform:none}
-  .counter{left:auto;right:var(--pad);bottom:auto;top:calc(5svh + 6px)}
+  .bgwrap::after{background:linear-gradient(180deg,rgba(4,10,20,.5),rgba(4,10,20,.3) 40%,rgba(4,10,20,.65))}
+  .stage{--ph:calc(46svh - 40px)}
+  .dev{left:50%;top:calc(66px + 2svh);height:var(--ph);transform:translateX(-50%)}
+  .watch{left:auto;right:3%;top:calc(66px + 18svh);width:84px;transform:none}
+  .counter{left:auto;right:var(--pad);bottom:auto;top:calc(66px + 2svh)}
   .bar{left:var(--pad);right:var(--pad);width:auto;bottom:12px}
   .film{height:260vh}
-  .vf{height:min(76svh,640px)}
+  .vf{height:min(72svh,640px)}
   .giant{font-size:34vw}
   .film-cap,.film-cap2{display:none}
   .hs{height:300vh}
@@ -286,22 +287,17 @@ footer small{display:block;margin-top:12px;font-size:12px}
 </section>
 
 <section class="story" id="fonctions"><div class="pin" id="pin">
+  <div class="bgwrap" id="panel"><img src="assets/m01.webp" alt=""><img src="assets/m02.webp" alt=""><img src="assets/m03.webp" alt=""><img src="assets/m04.webp" alt=""><img src="assets/m05.webp" alt=""></div>
   <div class="stage">
-    <div class="panel" id="panel">
-      <img src="assets/m01.webp" alt=""><img src="assets/m02.webp" alt=""><img src="assets/m03.webp" alt=""><img src="assets/m04.webp" alt=""><img src="assets/m05.webp" alt="">
-    </div>
     <div class="dev" id="dev"><div class="body" id="devBody">
       <svg class="phone-svg" viewBox="0 0 474 990" aria-hidden="true">
-        <defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".34" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".07"/></linearGradient></defs>
-        <clipPath id="scrClip"><rect x="17" y="17" width="440" height="956" rx="52"/></clipPath>
-        <g clip-path="url(#scrClip)">
-          <image data-src="dashboard" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="model3d" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="speedmap" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="lock" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="fall" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/>
-        </g>
-        <image href="assets/iphone-frame.webp" x="0" y="0" width="474" height="990"/>
-        <rect x="17" y="17" width="440" height="956" rx="62" fill="url(#gl)" pointer-events="none"/>
+        <defs><clipPath id="scrClip"><rect x="17" y="17" width="440" height="956" rx="52"/></clipPath></defs>
+        <g clip-path="url(#scrClip)" class="scr"><image data-src="dashboard" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="model3d" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="speedmap" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="lock" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/><image data-src="fall" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g>
+        <g clip-path="url(#scrClip)" class="hl"><rect x="30.2" y="346.8" width="413.6" height="172.1" rx="26"/><rect x="34.6" y="800.9" width="404.8" height="129.1" rx="26"/><rect x="34.6" y="781.8" width="404.8" height="138.6" rx="26"/><rect x="30.2" y="692.9" width="413.6" height="145.3" rx="26"/><rect x="39.0" y="590.6" width="396.0" height="200.8" rx="26"/></g>
+        <image href="assets/iphone-frame.webp?v=3" x="0" y="0" width="474" height="990"/>
       </svg>
     </div></div>
-    <div class="watch" id="watch"><div class="wscr"><img data-src="watch" alt=""></div><img class="wf" src="assets/watch-frame.webp" alt=""></div>
+    <div class="watch" id="watch"><div class="wscr"><img data-src="watch" alt=""></div><img class="wf" src="assets/watch-frame.webp?v=3" alt=""></div>
   </div>
 
   <div class="st-text">
@@ -513,7 +509,7 @@ function count(b){const n=+b.dataset.n;if(!n){b.textContent="0";return}const t0=
 
 /* ─── moteur de mouvement lié au défilement ─── */
 const hd=$("#hd"),heroBg=$("#heroBg"),heroIn=$("#heroIn"),hero=$("#hero");
-const story=$(".story"),chaps=$$(".chap"),bgs=$$("#panel img"),scrs=$$("#devBody image"),devBody=$("#devBody"),watch=$("#watch"),cn=$("#cn"),bar=$("#bar");
+const story=$(".story"),chaps=$$(".chap"),bgs=$$("#panel img"),scrs=$$("#devBody .scr image"),hls=$$("#devBody .hl rect"),devBody=$("#devBody"),watch=$("#watch"),cn=$("#cn"),bar=$("#bar");
 const film=$("#film"),giant=$("#giant"),vf=$("#vf");
 const hs=$("#hs"),track=$("#track");
 const mani=$("#mani");
@@ -543,10 +539,10 @@ function frame(){
      el.style.transform=reduce?"none":`translate3d(0,${clamp(d,-.6,.6)*-90}px,0)`;el.style.pointerEvents=a>.5?"auto":"none";
      el.style.visibility=a<.01?"hidden":"visible"});
    scrs.forEach((el,i)=>{let d=c-(i+.5);if(i===0&&d<0)d=0;if(i===N-1&&d>0)d=0;const a=1-sm(.36,.7,Math.abs(d));
-     el.style.opacity=a.toFixed(3);el.style.transform=reduce?"none":`scale(${1-Math.min(Math.abs(d),1)*.07})`});
+     el.style.opacity=a.toFixed(3)});
+   hls.forEach((el,i)=>{let d=c-(i+.5);if(i===0&&d<0)d=0;if(i===N-1&&d>0)d=0;el.style.opacity=(1-sm(.12,.34,Math.abs(d))).toFixed(3)});
    bgs.forEach((el,i)=>{let d=c-(i+.5);if(i===0&&d<0)d=0;if(i===N-1&&d>0)d=0;const a=1-sm(.34,.72,Math.abs(d));
      el.style.opacity=a.toFixed(3);el.style.transform=reduce?"none":`translate3d(0,${(sp-.5)*-60}px,0) scale(${1.04+Math.min(Math.abs(d),1)*.06})`});
-   if(!reduce)devBody.style.transform=`rotateY(${Math.sin(c*Math.PI)*-7}deg) rotateX(${Math.cos(c*Math.PI*.9)*2.2}deg) translate3d(0,${Math.sin(c*2.2)*-6}px,0)`;
    let d3=c-3.5;watch.style.opacity=(1-sm(.3,.55,Math.abs(d3))).toFixed(3);
    cn.textContent=String(Math.min(N,Math.floor(c)+1)).padStart(2,"0");bar.style.width=(sp*100)+"%"}
 

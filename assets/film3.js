@@ -125,8 +125,7 @@ void main(){
     c = vec4(vec3(.8,.9,1.)*band, band);
   } else if(uMode==4){                           // ombre portée douce (SDF)
     float k = clamp(uAux.x,1.,600.);
-    float eb = min(hb.x-abs(p.x), hb.y-abs(p.y));
-    float a = exp(-max(d,0.)/k*2.4)*smoothstep(0.,k*1.4,eb);
+    float a = smoothstep(0.,k*1.4,-d);                 // s'éteint le long du contour arrondi (jamais en rectangle)
     c = vec4(0.,0.,0.,a*.62);
     m = 1.;
   } else if(uMode==5){                           // halo radial
@@ -135,6 +134,10 @@ void main(){
     float gx = exp(-pow(vP.x*2.,2.)*uAux.x*.35), gy = exp(-pow(vP.y*uAux.y,2.)); c = vec4(uTint.rgb*gx*gy, gx*gy*uTint.a); m=1.;
   } else if(uMode==8){                           // silhouette teintée d'une image (épaisseur du téléphone)
     vec2 uv = mix(uRect.xy,uRect.zw,vUV); float al = textureLod(uTex,uv,0.).a; c = vec4(uTint.rgb, al*uTint.a); m = 1.;
+  } else if(uMode==9){                           // projecteur : assombrit hors d'une zone arrondie (centre uLight, demi-taille uAux, rayon uBezel)
+    float dh = sdRR(p-uLight,uAux,uBezel,2.); c = vec4(uTint.rgb, uTint.a*smoothstep(-3.,14.,dh));
+  } else if(uMode==10){                          // liseré lumineux autour de cette zone
+    float dh = sdRR(p-uLight,uAux,uBezel,2.); float ln = exp(-pow(dh*.5,2.)), gl = exp(-abs(dh)/15.)*.34; c = vec4(uTint.rgb*(ln+gl), (ln+gl)*uTint.a);
   } else if(uMode==7){                           // anneau pulsé
     float r = length(vP)*2.; float ring = exp(-pow((r-uAux.x)*uAux.y,2.)); c = vec4(uTint.rgb*ring, ring*uTint.a); m=1.;
   }
@@ -144,18 +147,22 @@ void main(){
   const FS_BG = GLSL_HEAD + `
 in vec2 vP; in vec2 vUV; out vec4 o;
 uniform sampler2D uTex; uniform vec4 uCrop; uniform vec2 uCam; uniform float uBlur; uniform float uFocus; uniform float uRef;
-uniform vec3 uShade; uniform float uTime; uniform vec3 uTint;
+uniform vec3 uShade; uniform float uTime; uniform vec3 uTint; uniform vec2 uSide; uniform float uAsp;
 void main(){
   vec2 puv = vUV*uCrop.xy+uCrop.zw;
   float depth = clamp((puv.y-.30)/.70,0.,1.);
   puv += uCam*(depth-uRef);
-  float lod = uBlur*abs(depth-uFocus)*4.;
-  vec3 c = textureLod(uTex,puv,lod).rgb;
-  c *= uTint;
+  float coc = uBlur*abs(depth-uFocus);
+  float rad = coc*.026, lod = uSide.y + coc*1.3;
+  vec3 c = vec3(0.);
+  for(int i=0;i<20;i++){ float fi=float(i); float r=sqrt((fi+.5)/20.), a=fi*2.39996;
+    c += textureLod(uTex, puv+vec2(cos(a),sin(a)*uAsp)*r*rad, lod).rgb; }
+  c = c/20.*uTint;
   float top = smoothstep(.62,0.,vUV.y)*uShade.x;      // voile sombre en haut
   float bot = smoothstep(.55,1.,vUV.y)*uShade.y;      // en bas
+  float lft = smoothstep(.78,0.,vUV.x)*uSide.x;       // à gauche (zone du texte en paysage)
   vec3 navy = vec3(.016,.039,.078);
-  c = mix(c,navy,clamp(top+bot+uShade.z,0.,1.));
+  c = mix(c,navy,clamp(top+bot+lft+uShade.z,0.,1.));
   o = vec4(c,1.);
 }`;
   const VS_PART = GLSL_HEAD + `
@@ -210,6 +217,7 @@ void main(){ vec3 s=texture(uTex,vUV).rgb*.2270270270;
   const FS_POST = GLSL_HEAD + `in vec2 vUV; out vec4 o;
 uniform sampler2D uScene; uniform sampler2D uB0; uniform sampler2D uB1; uniform sampler2D uB2;
 uniform float uBloom; uniform float uWarp; uniform float uFlash; uniform float uTime; uniform vec2 uRes; uniform float uGrain; uniform vec2 uShock;
+vec2 mir(vec2 u){ return 1.-abs(1.-mod(u,2.)); }
 float hash(vec2 p){ p=fract(p*vec2(443.897,441.423)); p+=dot(p,p+19.19); return fract(p.x*p.y); }
 void main(){
   vec2 uv = vUV; vec2 cen = uv-.5;
@@ -222,8 +230,8 @@ void main(){
   float w = uWarp;
   if(w>.002){
     const int N=14; vec3 acc=vec3(0.);
-    for(int i=0;i<N;i++){ float f=float(i)/float(N-1); vec2 off=cen*(f*w*.16);
-      acc.r+=texture(uScene,uv-off*(1.+w*.35)).r; acc.g+=texture(uScene,uv-off).g; acc.b+=texture(uScene,uv-off*(1.-w*.35)).b; }
+    for(int i=0;i<N;i++){ float f=float(i)/float(N-1); vec2 off=cen*(f*w*.09);
+      acc.r+=texture(uScene,mir(uv-off*(1.+w*.18))).r; acc.g+=texture(uScene,mir(uv-off)).g; acc.b+=texture(uScene,mir(uv-off*(1.-w*.18))).b; }
     col=acc/float(N);
   } else { col = texture(uScene,uv).rgb; }
   vec3 bl = texture(uB0,uv).rgb*.55 + texture(uB1,uv).rgb*.75 + texture(uB2,uv).rgb*.95;
@@ -307,7 +315,7 @@ void main(){
       list["share-" + l] = "share-" + l + ".webp"; list["watch-" + l] = "watch-" + l + ".webp";
     }
     list["replay-fr"] = "hd/replay-fr.webp";
-    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v).then(i => { TEX[k] = makeTexture(i); })));
+    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=3").then(i => { TEX[k] = makeTexture(i); })));
     TEX["replay-en"] = TEX["replay-fr"];
     ready = true; loading = false;
   }
@@ -381,6 +389,7 @@ void main(){
     gl.uniform4f(u.uCrop, sx * 1.06, sy * 1.06, ox - sx * 0.03, oy - sy * 0.03);
     gl.uniform2f(u.uCam, (o.camx || 0), (o.camy || 0));
     gl.uniform1f(u.uBlur, o.blur == null ? 1.4 : o.blur); gl.uniform1f(u.uFocus, o.focus == null ? 0.82 : o.focus); gl.uniform1f(u.uRef, o.ref == null ? 0.8 : o.ref);
+    gl.uniform2f(u.uSide, o.left || 0, o.lod0 == null ? (PORTRAIT ? 0.5 : 1.6) : o.lod0); gl.uniform1f(u.uAsp, iw / ih);
     gl.uniform3f(u.uShade, o.top == null ? 0.8 : o.top, o.bot == null ? 0.7 : o.bot, o.dim == null ? 0.18 : o.dim);
     const tn = o.tint || [1, 1, 1]; gl.uniform3f(u.uTint, tn[0], tn[1], tn[2]); gl.uniform1f(u.uTime, curT);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T.tex); gl.uniform1i(u.uTex, 0);
@@ -500,71 +509,52 @@ void main(){
     return w;
   }
 
-  /* ───────────── téléphone en 3D ───────────── */
+  /* ───────────── appareils : toujours de face (jamais inclinés), formes officielles, ombres douces ───────────── */
   const PN = 4.6;                                           // exposant des coins « continus » de l'iPhone
-  function rotVec(rx, ry, rz, v) {
-    const cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry), cz = Math.cos(rz), sz = Math.sin(rz);
-    const x1 = v[0], y1 = v[1] * cx - v[2] * sx, z1 = v[1] * sx + v[2] * cx;            // Rx
-    const x2 = x1 * cy + z1 * sy, y2 = y1, z2 = -x1 * sy + z1 * cy;                    // Ry
-    return [x2 * cz - y2 * sz, x2 * sz + y2 * cz, z2];                                 // Rz
+  /* ombre diffuse : l'aplat SDF s'éteint vers ses bords, le quad est donc plus grand que l'objet de la moitié de la zone d'extinction */
+  function softShadow(cx, cy, z, bw, bh, r, kk, a, n = PN) {
+    const m = kk * 0.7;
+    quad({ x: cx, y: cy, z, w: bw + m * 2, h: bh + m * 2, r: r + m, n, mode: 4, aux: [kk, 0], a });
   }
-  /* flanc en titane : maillage lisse suivant la silhouette officielle, éclairé (aucune couche empilée, donc aucune strie) */
-  function wall(key, o) {
-    const W_ = WALL[key], pr = P.wall, u = pr.u; useProgram(pr);
-    const M = m4.trs(o.x, o.y, o.z, o.rx || 0, o.ry || 0, o.rz || 0, 1, 1, 1);
-    gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniformMatrix4fv(u.uModel, false, M); gl.uniform1f(u.uK, o.k); gl.uniform1f(u.uThick, o.thick);
-    gl.uniform3f(u.uEye, EYE[0], EYE[1], EYE[2]); gl.uniform1f(u.uAlpha, o.a == null ? 1 : o.a); const b = o.base || [0.20, 0.21, 0.24]; gl.uniform3f(u.uBase, b[0], b[1], b[2]);
-    setBlend("over"); gl.bindVertexArray(W_.vao); gl.drawArrays(gl.TRIANGLE_STRIP, 0, W_.count);
-  }
+  const lerp4 = (p, q, e) => [lerp(p[0], q[0], e), lerp(p[1], q[1], e), lerp(p[2], q[2], e), lerp(p[3], q[3], e)];
 
   /* châssis officiel de l'iPhone 17 Pro Max (art vectoriel du Simulateur Xcode, 474×990 pt, écran 440×956 pt à (17,17)) */
   function phone(o) {
-    const k = o.w / 474, FW = 474 * k, FH = 990 * k, sw = 440 * k, sh = 956 * k, bodyW = 456 * k, rBody = 80 * k;
-    const a = o.a == null ? 1 : o.a, rx = o.rx || 0, ry = o.ry || 0, rz = o.rz || 0, z0 = o.z || 0;
-    const at = (dx, dy, dz) => { const v = rotVec(rx, ry, rz, [dx, dy, dz]); return { x: o.x + v[0], y: o.y + v[1], z: z0 + v[2], rx, ry, rz }; };
-    const thick = 46 * k;
-    if (o.glow !== 0) quad({ x: o.x, y: o.y, z: z0 - 30, w: FW * 2.6, h: FH * 1.5, mode: 5, tint: [0.14, 0.45, 1, 0.30 * (o.glow == null ? 1 : o.glow)], aux: [4.2, 0], a, add: true });
-    quad(Object.assign({ w: bodyW * 1.35, h: FH * 1.12, r: rBody, n: PN, mode: 4, aux: [bodyW * 0.22, 0], a: a * 0.9 }, at(0, -FH * 0.035, -thick - 4)));
-    // épaisseur : flanc lisse suivant la silhouette officielle
-    wall("phone", Object.assign({ k, thick: 46, a }, at(0, 0, 0)));
-    // écran (capture HD), puis châssis par-dessus : le trou du châssis épouse l'écran au pixel près
-    const zz = o.zoom || 0, pz = o.pan || [0, 0];
-    quad(Object.assign({ tex: o.tex, mode: 0, w: sw + 1, h: sh + 1, r: 52 * k, a, rect: [zz * 0.5 + pz[0], zz * 0.5 + pz[1], 1 - zz * 0.5 + pz[0], 1 - zz * 0.5 + pz[1]] }, at(0, 0, 0.3)));
-    quad(Object.assign({ tex: TEX.frame, mode: 0, w: FW, h: FH, a }, at(0, 0, 0.7)));
-    quad(Object.assign({ mode: 3, aux: [0.55 + ry * 1.4 + (o.sheen || 0), 0], add: true, w: sw, h: sh, r: 62 * k, n: PN, a }, at(0, 0, 0.9)));
-    return { w: FW, h: FH, sw, sh, r: rBody, b: 17 * k };
+    const k = o.w / 474, FW = 474 * k, FH = 990 * k, sw = 440 * k, sh = 956 * k, bw = 470 * k, bh = 986 * k, rb = 86 * k;
+    const a = o.a == null ? 1 : o.a, z0 = o.z || 0, cx = o.x, cy = o.y, glow = o.glow == null ? 1 : o.glow;
+    if (glow > 0) quad({ x: cx, y: cy, z: z0 - 30, w: FW * 2.4, h: FH * 1.4, mode: 5, tint: [0.12, 0.42, 1, 0.20 * glow], aux: [4.8, 0], a, add: true });
+    softShadow(cx, cy - bw * 0.10, z0 - 20, bw, bh, rb, bw * 0.24, a * 0.50);
+    softShadow(cx, cy - bw * 0.022, z0 - 10, bw, bh, rb, bw * 0.05, a * 0.55);
+    // zone visible de la capture (zoom doux vers un point), puis écran, puis châssis par-dessus : le trou du châssis épouse l'écran
+    const z = Math.max(1, o.zoom || 1), f = o.focus || [0.5, 0.5], hw = 0.5 / z, fx = clamp(f[0], hw, 1 - hw), fy = clamp(f[1], hw, 1 - hw);
+    const rect = [fx - hw, fy - hw, fx + hw, fy + hw];
+    const sc = { x: cx, y: cy, z: z0 + 0.3, w: sw + 1, h: sh + 1, r: 52 * k, a, rect, mode: 0 };
+    quad(Object.assign({ tex: o.tex }, sc));
+    if (o.tex2 && o.mix > 0) quad(Object.assign({}, sc, { tex: o.tex2, a: a * o.mix }));
+    const ph = { cx, cy, z: z0, k, sw, sh, rect, a };
+    if (o.spot) spotlight(ph, o.spot.rect, o.spot.dim, o.spot.ring);
+    quad({ tex: TEX.frame, mode: 0, x: cx, y: cy, z: z0 + 0.7, w: FW, h: FH, a });
+    return ph;
+  }
+  /* projecteur : assombrit l'écran hors d'une zone arrondie et la cerne d'un liseré lumineux (zone donnée en coordonnées de la capture) */
+  function spotlight(ph, reg, dimA, ringA) {
+    const r = ph.rect, X = n => (n - r[0]) / (r[2] - r[0]), Y = n => (n - r[1]) / (r[3] - r[1]), pad = 8 * ph.k;
+    const x0 = X(reg[0]), x1 = X(reg[2]), y0 = Y(reg[1]), y1 = Y(reg[3]);
+    const base = { x: ph.cx, y: ph.cy, z: ph.z + 0.5, w: ph.sw + 1, h: ph.sh + 1, r: 52 * ph.k,
+      light: [((x0 + x1) / 2 - 0.5) * ph.sw, -((y0 + y1) / 2 - 0.5) * ph.sh], aux: [(x1 - x0) / 2 * ph.sw + pad, (y1 - y0) / 2 * ph.sh + pad], bezel: 44 * ph.k };
+    if (dimA > 0.002) quad(Object.assign({ mode: 9, tint: [0.01, 0.03, 0.07, 0.52 * dimA], a: ph.a }, base));
+    if (ringA > 0.002) quad(Object.assign({ mode: 10, tint: [0.34, 0.80, 1, 0.9 * ringA], a: ph.a, add: true, z: ph.z + 0.6 }, base));
   }
 
-  /* ───────────── cartes d'interface flottantes (découpées dans les captures) ───────────── */
-  const CROPS = {
-    dashGauge: ["dashboard", 0.03, 0.345, 0.97, 0.525], dashWeather: ["dashboard", 0.03, 0.535, 0.97, 0.725], dashStats: ["dashboard", 0.03, 0.735, 0.97, 0.815],
-    dashTiles: ["dashboard", 0.03, 0.825, 0.97, 0.935], dashDay: ["dashboard", 0.03, 0.115, 0.97, 0.185],
-    terrain: ["model3d", 0.08, 0.30, 0.92, 0.76], hudTop: ["model3d", 0.03, 0.05, 0.97, 0.205], replayBar: ["model3d", 0.04, 0.82, 0.96, 0.955],
-    speedBar: ["speedmap", 0.04, 0.80, 0.96, 0.945], fallCard: ["fall", 0.05, 0.60, 0.95, 0.81], fallRing: ["fall", 0.12, 0.17, 0.88, 0.545],
-    rows: ["groups", 0.04, 0.345, 0.96, 0.725], rowsA: ["groups", 0.04, 0.345, 0.96, 0.50], rowsB: ["groups", 0.04, 0.46, 0.96, 0.615], rowsC: ["groups", 0.04, 0.58, 0.96, 0.725], lockWidget: ["lock", 0.03, 0.707, 0.97, 0.859], lockClock: ["lock", 0.05, 0.09, 0.95, 0.22],
-    discList: ["discover", 0.03, 0.30, 0.97, 0.60], discSearch: ["discover", 0.03, 0.19, 0.97, 0.30],
-  };
-  function card(key, o) {
-    const c = CROPS[key], T = tx(c[0]); if (!T) return;
-    const w = o.w, h = w * (c[4] - c[2]) / (c[3] - c[1]) * (T.h / T.w), a = o.a == null ? 1 : o.a, r = o.r == null ? w * 0.045 : o.r;
-    const lim = W / 2 - w * 0.5 * Math.cos(o.ry || 0) - 18; o = Object.assign({}, o, { x: clamp(o.x, -lim, lim), y: o.y + 7 * Math.sin(curT * 1.4 + (o.x || 0) * 0.01) });
-    const base = { x: o.x, y: o.y, z: o.z || 0, rx: o.rx || 0, ry: o.ry || 0, rz: o.rz || 0 };
-    quad(Object.assign({ w: w * 1.25, h: h * 1.5, r, mode: 4, aux: [w * 0.12, 0], a: a * 0.85 }, base, { y: o.y - h * 0.10, z: (o.z || 0) - 6 }));
-    quad(Object.assign({ tex: T, rect: [c[1], c[2], c[3], c[4]], w, h, r, a, lod: 0 }, base));
-    quad(Object.assign({ w: w - 2, h: h - 2, r, mode: 1, tint: [0.55, 0.78, 1, 0.12], add: true, a }, base, { z: (o.z || 0) + 0.4 }));
-    return { w, h };
-  }
-
-  /* Apple Watch Series 11 46 mm : châssis officiel (boîtier, couronne bouton latéral) + bracelet qui s'estompe, flanc 3D lisse */
+  /* Apple Watch Series 11 46 mm : boîtier officiel seul (sans bracelet), de face */
   function watchObj(o) {
     const T = tx("watch"); if (!T || !TEX["watch-frame"]) return;
-    const k = o.w / 512, FW = 512 * k, FH = 982 * k, a = o.a == null ? 1 : o.a, rx = o.rx || 0, ry = o.ry || 0, rz = o.rz || 0, z0 = o.z || 0;
-    const at = (dx, dy, dz) => { const v = rotVec(rx, ry, rz, [dx, dy, dz]); return { x: o.x + v[0], y: o.y + v[1], z: z0 + v[2], rx, ry, rz }; };
-    quad(Object.assign({ w: 496 * k * 1.5, h: 576 * k * 1.5, r: 72 * k, mode: 4, aux: [496 * k * 0.2, 0], a: a * 0.75 }, at(-5 * k, -30 * k, -60 * k)));
-    wall("watch", Object.assign({ k, thick: 92, a, base: [0.15, 0.16, 0.19] }, at(-5 * k, 0, 0)));
-    quad(Object.assign({ tex: T, mode: 0, w: 418 * k, h: 498 * k, r: 40 * k, a }, at(-5 * k + 0, 0, 0.3)));
-    quad(Object.assign({ tex: TEX["watch-frame"], mode: 0, w: FW, h: FH, a }, at(0, 0, 0.7)));
-    quad(Object.assign({ mode: 3, aux: [0.35 + (o.sheen || 0), 0], add: true, w: 416 * k, h: 496 * k, r: 58 * k, n: PN, a }, at(-5 * k, 0, 0.9)));
+    const k = o.w / 512, FW = 512 * k, FH = 582 * k, a = o.a == null ? 1 : o.a, z0 = o.z || 0, cx = o.x, cy = o.y, bw = 496 * k, bh = 576 * k, rb = 150 * k;
+    quad({ x: cx, y: cy, z: z0 - 30, w: FW * 2.4, h: FH * 1.8, mode: 5, tint: [0.12, 0.42, 1, 0.16], aux: [4.8, 0], a, add: true });
+    softShadow(cx - 5 * k, cy - bw * 0.10, z0 - 20, bw, bh, rb, bw * 0.24, a * 0.50);
+    softShadow(cx - 5 * k, cy - bw * 0.022, z0 - 10, bw, bh, rb, bw * 0.05, a * 0.55);
+    quad({ tex: T, mode: 0, x: cx - 5 * k, y: cy, z: z0 + 0.3, w: 418 * k, h: 498 * k, r: 40 * k, a });
+    quad({ tex: TEX["watch-frame"], mode: 0, x: cx, y: cy, z: z0 + 0.7, w: FW, h: FH, a });
   }
 
   /* ───────────── ruban de vitesse qui flotte au-dessus du relief ───────────── */
@@ -607,7 +597,7 @@ void main(){
   let D = 1000, FOV = 26 * Math.PI / 180, EYE = [0, 0, 1000];
   function setCamera(c = {}) {
     D = (H / 2) / Math.tan(FOV / 2);
-    const shk = reduce ? 0 : 1, dz = (c.dz || 0), ex = (c.x || 0) + 3.5 * Math.sin(curT * 1.3) * shk, ey = (c.y || 0) + 2.6 * Math.sin(curT * 1.7 + 1) * shk;
+    const shk = reduce ? 0 : 1, dz = (c.dz || 0), ex = (c.x || 0) + 1.6 * Math.sin(curT * 1.3) * shk, ey = (c.y || 0) + 1.2 * Math.sin(curT * 1.7 + 1) * shk;
     const eye = [ex + (c.orbit || 0) * 0, ey, D + dz];
     const yaw = c.yaw || 0, pitch = c.pitch || 0;
     // la caméra tourne autour de l'origine (vue orbitale)
@@ -620,7 +610,7 @@ void main(){
 
   /* ───────────── mise en page ───────────── */
   function L() {
-    if (PORTRAIT) return { x: 64, tag: 140, titleTop: 214, titleSize: 90, titleW: W - 128, pw: 600, px: 0, py: -(H * 0.075) - 62, chipsRow: true };
+    if (PORTRAIT) { const ph = Math.min(1200, H - 720), pw = ph * 474 / 990; return { x: 64, tag: 140, titleTop: 214, titleSize: 90, titleW: W - 128, pw, px: 0, py: ph / 2 + 30 - H / 2, chipsRow: true }; }
     return { x: W * 0.07, tag: H * 0.2, titleTop: H * 0.265, titleSize: 80, titleW: W * 0.4, pw: H * 0.405, px: W * 0.2, py: 0, chipsRow: false };
   }
 
@@ -674,92 +664,73 @@ void main(){
     return {};
   }
 
-  function sceneDash(u, dur, tt) {
-    const l = L(), T = TXT[lang], enter = eOutExpo(ramp(u, 0, 1.2)), prep = eInOut(ramp(u, 1.3, dur - 1.3));
-    setCamera({ dz: -80 * prep, yaw: 0.07 * Math.sin(u * 0.8), pitch: -0.02 });
-    drawBG("m1", { zoom: 1.18, cy: 0.62, camx: 0.02 * Math.sin(u * 0.6), top: 0.55, bot: 0.4, dim: 0.10, blur: 1.8, focus: 0.86, zb: 520 });
-    drawParticles(0.9, 300);
-    const pw = l.pw * (1 + 0.04 * prep), py = l.py - (1 - enter) * H * 0.9;
-    const d = phone({ tex: tx("dashboard"), x: l.px, y: py, z: 0, w: pw, rx: 0.10 * (1 - enter) - 0.02, ry: -0.42 * (1 - enter) + 0.10 * Math.sin(u * 1.1), rz: 0.10 * (1 - enter), a: 1, sheen: 0.4 * Math.sin(u) });
-    // les modules de l'interface se détachent du téléphone, au rythme de la musique
-    const spread = eOutBack(ramp(u, 1.0, 0.9)), ex = prep * 0.35;
-    const s = PORTRAIT ? 1 : 0.8;
-    card("dashGauge", { x: l.px - 250 * s * spread, y: l.py - 250 * s * spread, z: 120 * spread, w: 480 * s, ry: 0.28, rz: -0.03, a: spread });
-    card("dashWeather", { x: l.px + 260 * s * spread, y: l.py + 120 * s * spread, z: 170 * spread, w: 480 * s, ry: -0.30, rz: 0.03, a: spread });
-    card("dashTiles", { x: l.px - 230 * s * spread, y: l.py + 470 * s * spread, z: 90 * spread, w: 440 * s, ry: 0.22, a: spread });
-    drawOverlayBegin();
-    caps(T.dashTag, l.x, l.tag, eOutCubic(ramp(u, 0.15, 0.5)));
-    title(T.dash, T.dashIt, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.12, 0.85));
-    return { build: prep };
+  /* scène « fonction » : téléphone de face, projecteur sur les zones de l'interface, croisement d'écrans */
+  function focusAt(foci, u, dur) {
+    const t0 = 1.05, t1 = dur - 0.25, n = foci.length, seg = (t1 - t0) / n, idx = clamp(Math.floor((u - t0) / seg), 0, n - 1), local = u - t0 - idx * seg;
+    if (idx === 0 || n === 1) return foci[idx];
+    const e = eInOut(clamp(local / 0.55)), p = foci[idx - 1], q = foci[idx];
+    return [lerp(p[0], q[0], e), lerp(p[1], q[1], e), lerp(p[2], q[2], e), lerp(p[3], q[3], e)];
   }
-
-  /* scène « fonction » : téléphone en orbite lente + cartes flottantes spécifiques */
-  function sceneFeature(idx, bg, screen, u, dur, tt, deco) {
-    const l = L(), S = TXT[lang].scenes[idx], k = u / dur;
-    const enter = eOutExpo(ramp(u, 0.04, 0.85)), exit = eInOut(ramp(u, dur - 0.5, 0.5));
-    const dir = idx % 2 ? -1 : 1, orbit = dir * (0.32 - 0.58 * k);
-    setCamera({ yaw: orbit * 0.55, pitch: 0.035 - 0.05 * k, dz: 110 * (1 - eOutExpo(ramp(u, 0, 0.7))) - 90 * k - 70 * exit });
-    drawBG(bg, { zoom: 1.12 + 0.2 * k, cy: 0.55, camx: -orbit * 0.2, top: 0.55, bot: 0.38, dim: 0.05, blur: 1.6, focus: 0.84, zb: 520 });
-    drawParticles(0.85, 300);
-    const py = l.py + (1 - enter) * H * 0.95 - exit * 50;
-    phone({ tex: tx(screen), x: l.px, y: py, z: 0, w: l.pw, rx: 0.12 * (1 - enter), ry: -dir * 0.46 * (1 - enter) + 0.22 * Math.sin(u * 1.15 + idx), rz: 0.10 * (1 - enter) * dir, a: 1 - exit * 0.4, sheen: 0.6 * Math.sin(u * 0.9), zoom: 0.02 + 0.08 * k, pan: [0.02 * Math.sin(u * 0.7 + idx), -0.03 * k] });
-    if (deco) deco(u, dur, l, py);
+  function sceneDevice(S, bg, screen, u, dur, o = {}) {
+    const l = L(), k = u / dur, enter = eOutExpo(ramp(u, 0.05, 1.1)), foci = o.foci || [];
+    setCamera({ dz: 70 * (1 - eOutCubic(ramp(u, 0, 1.8))) + 30 * k, x: 0, y: 0 });
+    drawBG(bg, { zoom: 1.14 + 0.05 * k, cy: 0.56, camx: 0.03 * (k - 0.5), top: 0.46, bot: 0.24, dim: 0.05, blur: 1.6, focus: 0.84, zb: 520, left: PORTRAIT ? 0 : 0.50, tint: [0.96, 1.0, 1.10] });
+    drawParticles(0.55, 200);
+    const px = l.px + (o.dx || 0), py = l.py - (1 - enter) * 70, pw = l.pw * (0.94 + 0.06 * enter);
+    const args = { tex: tx(screen), x: px, y: py, z: 0, w: pw, a: Math.min(1, enter * 3) };
+    if (o.tex2) { args.tex2 = tx(o.tex2); args.mix = eInOut(ramp(u, o.mixAt, 0.7)); }
+    if (foci.length) {
+      const reg = focusAt(foci, u, dur), on = eOutCubic(ramp(u, 0.95, 0.6)), zm = 1 + 0.07 * eInOut(ramp(u, 1.0, dur - 1.4));
+      args.zoom = zm; args.focus = [(reg[0] + reg[2]) / 2, (reg[1] + reg[3]) / 2]; args.spot = { rect: reg, dim: on, ring: on * (0.75 + 0.25 * Math.sin(u * 2.2)) };
+    }
+    if (o.behind) o.behind(u, dur, px, py, pw);
+    phone(args);
+    if (o.extra) o.extra(u, dur, l, px, py, pw);
     drawOverlayBegin();
     caps(S.tag, l.x, l.tag, eOutCubic(ramp(u, 0.1, 0.4)));
     const w = 150 * eOutExpo(ramp(u, 0.15, 0.5));
     quad({ x: l.x + w / 2 - W / 2, y: H / 2 - (l.tag + 42), w, h: 4, mode: 1, tint: [0.3, 0.7, 1, 1], a: 1, ortho: true });
     const bottom = title(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.12, 0.8));
-    chips(S.chips, bottom, u, l);
+    if (S.chips && S.chips.length) chips(S.chips, bottom, u, l);
     return {};
   }
-  const down = (py, d) => py - d;                    // y vers le haut en monde : « d » positif = vers le bas de l'écran
-  const decoReplay = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.8)), s = PORTRAIT ? 1 : 0.8;
-    card("hudTop", { x: l.px + 250 * s * e, y: down(py, -400 * s), z: 150 * e, w: 540 * s, ry: -0.26, rz: 0.03, a: e });
-    card("replayBar", { x: l.px - 230 * s * e, y: down(py, 440 * s), z: 110 * e, w: 560 * s, ry: 0.24, rz: -0.02, a: e });
-  };
-  const decoMap = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.8)), s = PORTRAIT ? 1 : 0.8;
-    card("speedBar", { x: l.px - 210 * s * e, y: down(py, 440 * s), z: 140 * e, w: 580 * s, ry: 0.24, rz: -0.02, a: e });
-  };
-  const decoLock = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.9)), s = PORTRAIT ? 1 : 0.8;
-    card("lockWidget", { x: l.px - 190 * s * e, y: down(py, 330 * s), z: 150 * e, w: 520 * s, r: 520 * s * 0.07, ry: 0.22, rz: -0.025, a: e });
-    watchObj({ x: l.px + 262 * s * e, y: down(py, 120 * s - (1 - e) * 160), z: 170 * e, w: 330 * s, ry: -0.30, rz: 0.10, a: Math.min(1, e * 2), sheen: 0.3 * Math.sin(u) });
-  };
-  const decoFall = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.8)), s = PORTRAIT ? 1 : 0.8, ph = (u * 1.2) % 1;
-    quad({ x: l.px, y: down(py, -40), z: -40, w: 900 * s, h: 900 * s, mode: 7, tint: [1, 0.25, 0.2, 0.6 * (1 - ph)], aux: [0.25 + 0.7 * ph, 7], add: true });
-    card("fallCard", { x: l.px + 230 * s * e, y: down(py, 380 * s), z: 150 * e, w: 500 * s, ry: -0.3, rz: 0.02, a: e });
-  };
-  const decoGroups = (u, dur, l, py) => {
-    const s = PORTRAIT ? 1 : 0.8;
-    for (let i = 0; i < 3; i++) { const e = eOutBack(ramp(u, 0.8 + i * 0.18, 0.8));
-      card(["rowsA", "rowsB", "rowsC"][i], { x: l.px + (250 - i * 22) * s * e, y: down(py, (-330 + i * 270) * s), z: (80 + i * 50) * e, w: 420 * s, ry: -0.3, rz: 0.02 * (i - 1), a: e }); }
-  };
-  const decoShare = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.8)), s = PORTRAIT ? 1 : 0.8;
-    const T = tx("share"); if (T) { const w = 330 * s, h = w * T.h / T.w, x = clamp(l.px - 235 * s * e, -(W / 2 - w / 2 - 16), W / 2); quad({ w: w * 1.3, h: h * 1.2, x, y: down(py, -20 * s), z: 130 * e, r: w * 0.07, mode: 4, aux: [w * 0.12, 0], a: e * 0.85, ry: 0.3 });
-      quad({ tex: T, x, y: down(py, -20 * s), z: 130 * e, w, h, r: w * 0.07, ry: 0.3, rz: -0.05, a: e }); }
-  };
-  const decoDiscover = (u, dur, l, py) => {
-    const e = eOutBack(ramp(u, 0.9, 0.8)), s = PORTRAIT ? 1 : 0.8;
-    card("discSearch", { x: l.px - 220 * s * e, y: down(py, -330 * s), z: 130 * e, w: 460 * s, ry: 0.3, a: e });
-    const T = tx("discovermap"); if (T) { const w = 290 * s, h = w * T.h / T.w; quad({ w: w * 1.3, h: h * 1.2, x: l.px + 250 * s * e, y: down(py, 90 * s), z: 150 * e, r: w * 0.08, mode: 4, aux: [w * 0.12, 0], a: e * 0.85, ry: -0.3 });
-      quad({ tex: T, x: l.px + 250 * s * e, y: down(py, 90 * s), z: 150 * e, w, h, r: w * 0.08, ry: -0.3, rz: 0.05, a: e }); }
-  };
+  const sceneDash = (u, dur) => { const T = TXT[lang];
+    return sceneDevice({ tag: T.dashTag, title: T.dash, it: T.dashIt, chips: [] }, "m1", "dashboard", u, dur, { foci: [[0.03, 0.345, 0.97, 0.525], [0.03, 0.535, 0.97, 0.725], [0.03, 0.825, 0.97, 0.935]] }); };
+  const sceneFeature = (idx, bg, screen, u, dur, o) => sceneDevice(TXT[lang].scenes[idx], bg, screen, u, dur, o);
+  const FEATURES = [
+    ["m2", "model3d", { foci: [[0.03, 0.05, 0.97, 0.205], [0.04, 0.82, 0.96, 0.955]] }],
+    ["m3", "speedmap", { foci: [[0.04, 0.80, 0.96, 0.945]] }],
+    ["m4", "lock", { foci: [[0.05, 0.09, 0.95, 0.22], [0.03, 0.707, 0.97, 0.859]] }],
+    ["m5", "fall", { foci: [[0.12, 0.17, 0.88, 0.545], [0.05, 0.60, 0.95, 0.81]] }],
+    ["m6", "groups", { foci: [[0.04, 0.345, 0.96, 0.725]] }],
+    ["m1", "replay", { tex2: "share", mixAt: 1.9 }],
+    ["m7", "discover", { foci: [[0.03, 0.19, 0.97, 0.30]], tex2: "discovermap", mixAt: 2.2 }],
+  ];
+  function featureScene(i, u, dur) {
+    const f = FEATURES[i], o = Object.assign({}, f[2]);
+    if (i === 2) { o.dx = PORTRAIT ? -150 : -120;                                 // la montre prend la place à droite du téléphone
+      o.extra = (uu, d, l, px, py, pw) => { const e = eOutExpo(ramp(uu, 0.5, 1.1)), w = PORTRAIT ? 290 : 250, wx = px + pw / 2 + w * 0.62 + (PORTRAIT ? 30 : 60);
+        watchObj({ x: wx, y: py + (PORTRAIT ? 150 : 90) - (1 - e) * 60, z: 0, w, a: Math.min(1, e * 2.5) }); }; }
+    if (i === 3) o.behind = (uu, d, px, py, pw) => { const ph = (uu * 1.1) % 1; quad({ x: px, y: py, z: -40, w: pw * 2.4, h: pw * 2.4, mode: 7, tint: [1, 0.25, 0.2, 0.30 * (1 - ph)], aux: [0.22 + 0.62 * ph, 7], add: true }); };
+    return sceneFeature(i, f[0], f[1], u, dur, o);
+  }
 
   function sceneFinale(u, dur, tt) {
     const T = TXT[lang], l = L();
-    setCamera({ dz: 140 * (1 - eOutExpo(ramp(u, 0, 1.6))) - 40 * ramp(u, 1.6, dur), yaw: 0.08 * Math.sin(u * 0.5) });
-    drawBG("m5", { zoom: 1.12, cy: 0.5, camx: 0.02 * Math.sin(u * 0.5), top: 0.55, bot: 0.55, dim: 0.14, blur: 1.8, focus: 0.84, zb: 540 });
-    drawParticles(0.9, 320);
-    const w = PORTRAIT ? 400 : H * 0.285, cx = PORTRAIT ? 300 : H * 0.30, y0 = PORTRAIT ? -30 : -12;
-    const items = [["speedmap", -1, 0.42, -0.06], ["model3d", 1, 0.42, 0.06], ["dashboard", 0, 0, 0]];
-    items.forEach((it, i) => {
-      const e = eOutExpo(ramp(u, 0.15 + i * 0.16, 1.2));
-      phone({ tex: tx(it[0]), x: it[1] * cx * (0.6 + 0.4 * e), y: y0 + (1 - e) * H * 0.9 - (i === 2 ? 0 : 40) + Math.sin(u * 1.2 + i) * 6, z: it[1] === 0 ? 60 : -40, w: it[1] === 0 ? w * 1.12 : w, ry: -it[1] * 0.32 * e + 0.05 * Math.sin(u * 0.7 + i), rz: it[3] * e, a: 1, glow: it[1] === 0 ? 1 : 0.5 });
-    });
+    setCamera({ dz: 90 * (1 - eOutExpo(ramp(u, 0, 1.6))) + 20 * ramp(u, 1.6, dur) });
+    drawBG("m5", { zoom: 1.14, cy: 0.5, camx: 0.02 * Math.sin(u * 0.5), top: 0.6, bot: 0.55, dim: 0.26, blur: 2.2, focus: 0.84, zb: 540, tint: [0.88, 0.94, 1.04] });
+    drawParticles(0.6, 220);
+    if (PORTRAIT) {
+      const ph = Math.min(1060, H - 860), pw = ph * 474 / 990, e = eOutExpo(ramp(u, 0.15, 1.2)), list = ["dashboard", "model3d", "speedmap", "groups", "lock"];
+      const seg = (dur - 0.5) / list.length, i = clamp(Math.floor(u / seg), 0, list.length - 1), loc = u - i * seg;
+      phone({ tex: tx(list[i]), tex2: i < list.length - 1 ? tx(list[i + 1]) : null, mix: eInOut(ramp(loc, seg - 0.4, 0.4)), x: 0, y: H / 2 - (470 + ph / 2) - (1 - e) * 60, z: 0, w: pw * (0.95 + 0.05 * e), a: Math.min(1, e * 3) });
+    } else {
+      const w = H * 0.27, cx = H * 0.335, y0 = -14;
+      [["speedmap", -1], ["dashboard", 0], ["model3d", 1]].forEach((it, i) => {
+        const e = eOutExpo(ramp(u, 0.15 + i * 0.14, 1.2)), mid = it[1] === 0;
+        phone({ tex: tx(it[0]), x: it[1] * cx, y: y0 - (1 - e) * 80, z: 0, w: mid ? w * 1.12 : w, a: Math.min(1, e * 3), glow: mid ? 1 : 0.5 });
+      });
+    }
     drawOverlayBegin();
     if (PORTRAIT) title(T.finale, T.finaleIt, 96, W / 2, 150, W - 120, ramp(u, 0.2, 1.2), { center: true });
     else title(T.finale, T.finaleIt, 76, W / 2, H * 0.06, W * 0.8, ramp(u, 0.2, 1.2), { center: true });
@@ -804,14 +775,8 @@ void main(){
     switch (i) {
       case 0: return sceneIntro(u, dur, tt);
       case 1: return sceneTrace(u, dur, tt);
-      case 2: return sceneDash(u, dur, tt);
-      case 3: return sceneFeature(0, "m2", "model3d", u, dur, tt, decoReplay);
-      case 4: return sceneFeature(1, "m3", "speedmap", u, dur, tt, decoMap);
-      case 5: return sceneFeature(2, "m4", "lock", u, dur, tt, decoLock);
-      case 6: return sceneFeature(3, "m5", "fall", u, dur, tt, decoFall);
-      case 7: return sceneFeature(4, "m6", "groups", u, dur, tt, decoGroups);
-      case 8: return sceneFeature(5, "m1", "replay", u, dur, tt, decoShare);
-      case 9: return sceneFeature(6, "m7", "discover", u, dur, tt, decoDiscover);
+      case 2: return sceneDash(u, dur);
+      case 3: case 4: case 5: case 6: case 7: case 8: case 9: return featureScene(i - 3, u, dur);
       case 10: return sceneFinale(u, dur, tt);
       default: return sceneEnd(u, dur, tt);
     }
