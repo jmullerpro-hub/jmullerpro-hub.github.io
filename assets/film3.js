@@ -315,7 +315,7 @@ void main(){
       list["share-" + l] = "share-" + l + ".webp"; list["watch-" + l] = "watch-" + l + ".webp";
     }
     list["replay-fr"] = "hd/replay-fr.webp";
-    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=4").then(i => { TEX[k] = makeTexture(i); })));
+    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=5").then(i => { TEX[k] = makeTexture(i); })));
     TEX["replay-en"] = TEX["replay-fr"];
     ready = true; loading = false;
   }
