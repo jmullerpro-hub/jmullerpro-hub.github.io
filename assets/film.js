@@ -66,7 +66,7 @@
     if (ready || loading) return; loading = true;
     const list = {};
     for (let n = 1; n <= 7; n++) list["m" + n] = BASE + "m0" + n + ".webp";
-    list.hero = BASE + "hero.webp"; list.icon = BASE + "icon.png";
+    list.hero = BASE + "hero.webp"; list.icon = BASE + "icon.png"; list.frame = BASE + "iphone-frame.webp?v=6"; list.wframe = BASE + "watch-frame.webp?v=6";
     ["dashboard", "model3d", "speedmap", "lock", "fall", "groups", "share", "discover", "watch"].forEach(k => { list[k + "-fr"] = BASE + k + "-fr.webp"; list[k + "-en"] = BASE + k + "-en.webp"; });
     await Promise.all(Object.entries(list).map(([k, v]) => loadImg(v).then(i => (IMG[k] = i))));
     ready = true; loading = false;
@@ -144,29 +144,33 @@
     ctx.restore(); return full;
   }
   /* téléphone : cadre, reflet, écran arrondi */
-  function phone(im, cx, cy, w, rot = 0, alpha = 1, withGlow = true) {
-    const h = (w * 1347) / 620, rad = w * 0.158;
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
-    if (withGlow) glow(0, 0, w * 1.15, rgb(0.17, 0.55, 1, 0.3 * alpha));
-    ctx.globalAlpha = alpha;
-    const sh = ctx.createRadialGradient(0, h * 0.5, 0, 0, h * 0.5, w * 0.75); sh.addColorStop(0, "rgba(0,0,0,.5)"); sh.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = sh; ctx.fillRect(-w, h * 0.5 - w * 0.4, w * 2, w * 0.8);
-    rr(-w / 2, -h / 2, w, h, rad); ctx.fillStyle = "rgb(4,7,12)"; ctx.fill();
-    rr(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2, rad - 1); ctx.strokeStyle = "rgba(255,255,255,.2)"; ctx.lineWidth = 2; ctx.stroke();
-    const b = w * 0.021; rr(-w / 2 + b, -h / 2 + b, w - 2 * b, h - 2 * b, rad - b); ctx.clip();
-    ctx.drawImage(im, -w / 2 + b, -h / 2 + b, w - 2 * b, h - 2 * b);
+  /* superellipse « coin continu » mesurée sur les vrais contours (voir Tools/Screenshots/make_device_frames.py) */
+  function sePath(cx, cy, hx, hy, r, n) {
+    const N = 26; ctx.beginPath();
+    for (let c = 0; c < 4; c++) for (let i = 0; i <= N; i++) {
+      const t = Math.PI / 2 * i / N, qx = r * Math.pow(Math.abs(Math.cos(t)), 2 / n), qy = r * Math.pow(Math.abs(Math.sin(t)), 2 / n);
+      const p = [[cx + hx - r + qy, cy - hy + r - qx], [cx + hx - r + qx, cy + hy - r + qy], [cx - hx + r - qy, cy + hy - r + qx], [cx - hx + r - qx, cy - hy + r - qy]][c];
+      (c === 0 && i === 0) ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]);
+    }
+    ctx.closePath();
+  }
+  function device(im, frame, cx, cy, k, fw, fh, scr, body, alpha, glowOn) {
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(k, k); ctx.translate(-fw / 2, -fh / 2); ctx.globalAlpha = alpha;
+    if (glowOn) glow(fw / 2, fh / 2, fw * 1.15, rgb(0.17, 0.55, 1, 0.26 * alpha));
+    // ombre portée qui suit le contour (jamais un rectangle)
+    ctx.save(); ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 70 * k; ctx.shadowOffsetY = 38 * k; ctx.fillStyle = "#000";
+    sePath(body[0], body[1], body[2], body[3], body[4], body[5]); ctx.fill(); ctx.restore();
+    ctx.save(); sePath(scr[0], scr[1], scr[2], scr[3], scr[4], scr[5]); ctx.clip();
+    const sw = scr[2] * 2, sh = scr[3] * 2, s = Math.max(sw / im.width, sh / im.height);
+    ctx.drawImage(im, scr[0] - im.width * s / 2, scr[1] - im.height * s / 2, im.width * s, im.height * s); ctx.restore();
+    ctx.drawImage(frame, 0, 0, fw, fh);
     ctx.restore();
   }
+  function phone(im, cx, cy, w, rot = 0, alpha = 1, withGlow = true) {
+    device(im, IMG.frame, cx, cy, w / 474, 474, 990, [237, 495, 220, 478, 80.2, 2.7], [237, 495, 235, 493, 93.5, 2.5], alpha, withGlow);
+  }
   function watchView(cx, cy, w, rot, alpha) {
-    const h = w * 1.2, rad = w * 0.3, im = IMG["watch-" + lang];
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.globalAlpha = alpha;
-    const sh = ctx.createRadialGradient(0, h * 0.5, 0, 0, h * 0.5, w * 0.8); sh.addColorStop(0, "rgba(0,0,0,.55)"); sh.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = sh; ctx.fillRect(-w, h * 0.5 - w * 0.4, w * 2, w * 0.8);
-    rr(-w / 2, -h / 2, w, h, rad); ctx.fillStyle = "rgb(4,7,12)"; ctx.fill();
-    rr(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2, rad - 1); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 2; ctx.stroke();
-    const b = w * 0.05, iw = w - 2 * b, ih = h - 2 * b; rr(-iw / 2, -ih / 2, iw, ih, rad - b); ctx.clip();
-    const s = Math.max(iw / im.width, ih / im.height); ctx.drawImage(im, -im.width * s / 2, -im.height * s / 2, im.width * s, im.height * s);
-    ctx.restore();
+    device(IMG["watch-" + lang], IMG.wframe, cx, cy, w / 512, 512, 582, [251, 291, 208, 248, 123.7, 2.5], [251, 291, 248, 287.9, 160, 2.3], alpha, false);
   }
   const beat = tt => Math.exp(-Math.max(0, ((tt - T0) / BEAT) % 1) * 6);
   function snow(tt, count = 70) {
@@ -225,7 +229,7 @@
     const bottom = revealTitle(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.2, 1.1));
     const enter = eOutExpo(ramp(u, 0.1, 1.0)), exit = eInOut(ramp(u, dur - 0.45, 0.45));
     const cy = l.pcy + (1 - enter) * (PORTRAIT ? 900 : 700) - exit * 60 + Math.sin(u * 1.7) * 8;
-    const rot = (1 - enter) * 0.1 - 0.012 + Math.sin(u * 1.1) * 0.006;
+    const rot = 0;
     phone(IMG[screenKey + "-" + lang], l.pcx, cy, l.pw, rot, 1 - exit * 0.5);
     if (extra) extra(u, l.pcx, cy, l);
     let cx0 = l.x, cy0 = bottom + 26;
@@ -236,7 +240,7 @@
   }
   function extraWatch(u, pcx, pcy, l) {
     const e = eOutBack(ramp(u, 0.9, 0.8)), w = l.pw * 0.38;
-    watchView(pcx + l.pw * 0.40, pcy + l.pw * 0.62 - (1 - e) * 120, w, 0.1 - (1 - e) * 0.2, Math.min(1, e * 2));
+    watchView(pcx + l.pw * 0.40, pcy + l.pw * 0.62 - (1 - e) * 120, w, 0, Math.min(1, e * 2));
   }
   function sceneIntro(u, dur, tt) {
     if (PORTRAIT) backdrop(7, u, dur, tt, { z0: 1.32, z1: 1.06, ay: 0.62, dim: 0.1 });
@@ -320,17 +324,17 @@
     const bottom = revealTitle(T.dash, T.dashIt, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.2, 1.1));
     const enter = eOutExpo(ramp(u, 0, 1.1)), r2 = eInOut(ramp(u, 1.2, dur - 1.2));
     const cy = l.pcy + (1 - enter) * 1000 - r2 * 30;
-    phone(IMG["dashboard-" + lang], l.pcx, cy, l.pw * (1 + 0.1 * r2), (1 - enter) * -0.12 + Math.sin(u * 1.5) * 0.006);
+    phone(IMG["dashboard-" + lang], l.pcx, cy, l.pw * (1 + 0.1 * r2), 0);
     let cx0 = l.x, cy0 = bottom + 26;
     T.dashChips.forEach((c, i) => { const w = chip(c, cx0, cy0, ramp(u, 0.9 + i * 0.25, 0.5)); if (PORTRAIT) cx0 += w + 16; else cy0 += 100; });
   }
   function sceneFinale(u, dur, tt) {
     const T = TXT[lang];
     backdrop(5, u, dur, tt, { z0: 1.1, z1: 1.0, ay: 0.5, dim: 0.36 }); snow(tt);
-    const shots = [["speedmap", -1, -0.1], ["dashboard", 0, 0], ["model3d", 1, 0.1]];
+    const shots = [["speedmap", -1, 0], ["dashboard", 0, 0], ["model3d", 1, 0]];
     if (PORTRAIT) revealTitle(T.finale, T.finaleIt, 100, W / 2, 170, W - 130, ramp(u, 0.2, 1.2), { center: true });
     else revealTitle(T.finale, T.finaleIt, 84, W / 2, H * 0.07, W * 0.8, ramp(u, 0.2, 1.2), { center: true });
-    const pwSide = PORTRAIT ? 400 : H * 0.34, pwMid = PORTRAIT ? 470 : H * 0.4, gap = PORTRAIT ? 300 : H * 0.32;
+    const pwSide = PORTRAIT ? 292 : H * 0.27, pwMid = PORTRAIT ? 334 : H * 0.30, gap = PORTRAIT ? 340 : H * 0.34;
     const baseY = PORTRAIT ? 1010 : H * 0.5;
     shots.forEach((s, i) => {
       const e = eOutExpo(ramp(u, 0.2 + i * 0.18, 1)), drift = Math.sin(u * 1.2 + i) * 8;
