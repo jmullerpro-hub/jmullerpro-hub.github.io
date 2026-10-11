@@ -409,8 +409,8 @@ footer small{display:block;margin-top:12px;font-size:12px}
 </main>
 
 <audio id="fa" preload="none" src="assets/film.m4a"></audio>
-<script src="assets/film3.js"></script>
-<script src="assets/film.js"></script>
+<script src="assets/film3.js?v=7"></script>
+<script src="assets/film.js?v=7"></script>
 
 
 <script>
@@ -492,7 +492,7 @@ function startFilm(){
   Promise.resolve().then(()=>SnowFilm.init(opts)).catch(err=>{
     console.warn("WebGL indisponible, lecteur 2D :",err);
     const old=$("#fc"),fresh=document.createElement("canvas");fresh.id="fc";fresh.setAttribute("role","img");fresh.setAttribute("aria-label",old.getAttribute("aria-label"));old.replaceWith(fresh);
-    delete window.SnowFilm;const sc=document.createElement("script");sc.src="assets/film.js";
+    delete window.SnowFilm;const sc=document.createElement("script");sc.src="assets/film.js?v=7";
     sc.onload=()=>{SnowFilm.init({canvas:$("#fc"),host:vfEl,audio:fa,onReady:()=>{syncPlay()},onFrame:(tt)=>{$("#scrubI").style.width=(tt/SnowFilm.total*100)+"%"}});SnowFilm.setLang(L)};
     document.head.appendChild(sc);
   });

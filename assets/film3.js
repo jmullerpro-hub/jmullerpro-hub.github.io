@@ -99,6 +99,7 @@ void main(){ vP=aPos; vUV=vec2(aPos.x+.5,.5-aPos.y); gl_Position=uMVP*vec4(aPos,
   const FS_QUAD = GLSL_HEAD + `
 in vec2 vP; in vec2 vUV; out vec4 o;
 uniform sampler2D uTex; uniform vec4 uTint; uniform vec4 uRect; uniform vec2 uSize; uniform float uRadius; uniform float uLod;
+uniform vec2 uView; uniform vec4 uMk; uniform float uMkS;
 uniform float uAlpha; uniform int uMode; uniform vec2 uLight; uniform float uBezel; uniform float uTime; uniform vec2 uAux; uniform float uN;
 float sdRR(vec2 p, vec2 b, float r, float n){ vec2 q=abs(p)-b+r; vec2 m=max(q,0.); float e = n<2.05 ? length(m) : pow(pow(m.x,n)+pow(m.y,n),1./n); return e+min(max(q.x,q.y),0.)-r; }
 void main(){
@@ -142,6 +143,9 @@ void main(){
     float r = length(vP)*2.; float ring = exp(-pow((r-uAux.x)*uAux.y,2.)); c = vec4(uTint.rgb*ring, ring*uTint.a); m=1.;
   }
   float a = c.a*uAlpha*m;
+  if(uMkS>0.){ vec2 f=gl_FragCoord.xy/uView; f.y=1.-f.y;
+    float mk=mix(1.,smoothstep(uMk.x,uMk.y,f.x),step(1e-4,uMk.y-uMk.x))*mix(1.,smoothstep(uMk.z,uMk.w,f.y),step(1e-4,uMk.w-uMk.z));
+    a*=mix(1.,mk,uMkS); }
   o = vec4(c.rgb*a, a);
 }`;
   const FS_BG = GLSL_HEAD + `
@@ -366,11 +370,12 @@ void main(){
     gl.uniform1f(u.uN, o.n || 2); gl.uniform1f(u.uBezel, o.bezel || 0); gl.uniform1i(u.uMode, o.mode == null ? (o.tex ? 0 : 1) : o.mode); gl.uniform1f(u.uLod, o.lod || 0);
     const lg = o.light || [0.5, 0.8]; gl.uniform2f(u.uLight, lg[0], lg[1]);
     const ax = o.aux || [0, 0]; gl.uniform2f(u.uAux, ax[0], ax[1]); gl.uniform1f(u.uTime, curT);
+    gl.uniform2f(u.uView, CW, CH); gl.uniform4f(u.uMk, MK[0], MK[1], MK[2], MK[3]); gl.uniform1f(u.uMkS, MK[4]);
     if (o.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.tex.tex || o.tex); gl.uniform1i(u.uTex, 0); }
     setBlend(o.add ? "add" : "over");
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
-  let ORTHO = m4.id(), curT = 0;
+  let ORTHO = m4.id(), curT = 0, MK = [0, 0, 0, 0, 0];     // masque doux (fondu du téléphone agrandi vers le titre)
 
   /* coordonnées « scène » : (sx,sy) origine en haut à gauche, y vers le bas → monde (y vers le haut, origine au centre) */
   const wx = sx => sx - W / 2, wy = sy => H / 2 - sy;
@@ -664,53 +669,97 @@ void main(){
     return {};
   }
 
-  /* scène « fonction » : téléphone de face, projecteur sur les zones de l'interface, croisement d'écrans */
-  function focusAt(foci, u, dur) {
-    const t0 = 1.05, t1 = dur - 0.25, n = foci.length, seg = (t1 - t0) / n, idx = clamp(Math.floor((u - t0) / seg), 0, n - 1), local = u - t0 - idx * seg;
-    if (idx === 0 || n === 1) return foci[idx];
-    const e = eInOut(clamp(local / 0.55)), p = foci[idx - 1], q = foci[idx];
-    return [lerp(p[0], q[0], e), lerp(p[1], q[1], e), lerp(p[2], q[2], e), lerp(p[3], q[3], e)];
+  /* ───── caméra de mise au point ─────
+     Chaque scène zoome sur un composant précis de l'écran (jamais un découpage arbitraire) : il remplit la zone libre à côté du titre
+     et une légende dit ce que c'est. Un « état » = zoom Z autour d'un pivot P (monde) ramené en T ; objets et tailles suivent. */
+  let vgTex = null;
+  let hgTex = null;
+  function ensureVG() { if (vgTex) return; { const c = document.createElement("canvas"); c.width = 128; c.height = 4; const x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 128, 0);
+      g.addColorStop(0, "rgba(4,10,20,0.98)"); g.addColorStop(0.9, "rgba(4,10,20,0.97)"); g.addColorStop(1, "rgba(4,10,20,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 4); hgTex = makeTexture(c, { mip: false }); } const c = document.createElement("canvas"); c.width = 4; c.height = 128; const x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 0, 128);
+    g.addColorStop(0, "rgba(4,10,20,0.98)"); g.addColorStop(0.86, "rgba(4,10,20,0.97)"); g.addColorStop(1, "rgba(4,10,20,0)"); x.fillStyle = g; x.fillRect(0, 0, 4, 128); vgTex = makeTexture(c, { mip: false }); }
+  function zoneOf() {
+    if (PORTRAIT) { const top = 650, bot = H - 70; return { cx: 0, cy: H / 2 - (top + bot) / 2, w: W * 0.94, h: bot - top, top }; }
+    return { cx: W * 0.235, cy: -0.03 * H, w: W * 0.45, h: H * 0.80, top: H * 0.1 };
   }
+  const ID_STATE = { Z: 1, P: [0, 0], T: [0, 0] };
+  function focusState(f, base) {
+    const zn = zoneOf();
+    if (f.out) return ID_STATE;
+    if (f.center) return { Z: f.z || 1.1, P: [base.x, base.y], T: [base.x, base.y] };
+    if (f.watch) { const w = base.watch, rw = w.w * 0.95, rh = w.w * 582 / 512 * 0.95;
+      return { Z: clamp(Math.min(zn.w * 0.8 / rw, zn.h * 0.8 / rh), 1, f.zmax || 2.0), P: [w.x, w.y], T: [zn.cx, zn.cy] }; }
+    const k = base.pw / 474, sw0 = 440 * k, sh0 = 956 * k, r = f.r, rw = (r[2] - r[0]) * sw0, rh = (r[3] - r[1]) * sh0;
+    const ox = ((r[0] + r[2]) / 2 - 0.5) * sw0, oy = ((r[1] + r[3]) / 2 - 0.5) * sh0;
+    return { Z: clamp(Math.min(zn.w * 0.94 / rw, zn.h * 0.86 / rh), 1, f.zmax || 2.6), P: [base.x + ox, base.y - oy], T: [zn.cx, zn.cy] };
+  }
+  const mixState = (a, b, e) => ({ Z: Math.exp(lerp(Math.log(a.Z), Math.log(b.Z), e)), P: [lerp(a.P[0], b.P[0], e), lerp(a.P[1], b.P[1], e)], T: [lerp(a.T[0], b.T[0], e), lerp(a.T[1], b.T[1], e)] });
+  const applyS = (s, x, y) => [s.T[0] + (x - s.P[0]) * s.Z, s.T[1] + (y - s.P[1]) * s.Z];
+
   function sceneDevice(S, bg, screen, u, dur, o = {}) {
     const l = L(), k = u / dur, enter = eOutExpo(ramp(u, 0.05, 1.1)), foci = o.foci || [];
+    const t0 = o.t0 || 0.95, gap = o.gap || 1.4, TR = 0.85;
     setCamera({ dz: 70 * (1 - eOutCubic(ramp(u, 0, 1.8))) + 30 * k, x: 0, y: 0 });
     drawBG(bg, { zoom: 1.14 + 0.05 * k, cy: 0.56, camx: 0.03 * (k - 0.5), top: 0.46, bot: 0.24, dim: 0.05, blur: 1.6, focus: 0.84, zb: 520, left: PORTRAIT ? 0 : 0.50, tint: [0.96, 1.0, 1.10] });
     drawParticles(0.55, 200);
-    const px = l.px + (o.dx || 0), py = l.py - (1 - enter) * 70, pw = l.pw * (0.94 + 0.06 * enter);
-    const args = { tex: tx(screen), x: px, y: py, z: 0, w: pw, a: Math.min(1, enter * 3) };
+    const base = { x: l.px + (o.dx || 0), y: l.py - (1 - enter) * 70, pw: l.pw * (0.94 + 0.06 * enter) };
+    if (o.watch) { const w = PORTRAIT ? 290 : 250; base.watch = { w, x: base.x + base.pw / 2 + w * 0.62 + (PORTRAIT ? 30 : 60), y: base.y + (PORTRAIT ? 150 : 90) }; }
+    // état de la caméra : on enchaîne les mises au point
+    let st = ID_STATE, amount = 0, lab = null, labA = 0;
+    foci.forEach((f, i) => { const ti = t0 + i * gap, e = eInOut(ramp(u, ti, TR)); st = mixState(st, focusState(f, base), e);
+      if (f.label) { const a = ramp(u, ti + TR * 0.7, 0.4) * (1 - (i + 1 < foci.length ? ramp(u, t0 + (i + 1) * gap, 0.3) : 0)); if (a > labA) { labA = a; lab = f.label; } } });
+    amount = clamp(Math.log(st.Z) / Math.log(1.6));
+    const pp = applyS(st, base.x, base.y), pwz = base.pw * st.Z;
+    const args = { tex: tx(screen), x: pp[0], y: pp[1], z: 0, w: pwz, a: Math.min(1, enter * 3) };
     if (o.tex2) { args.tex2 = tx(o.tex2); args.mix = eInOut(ramp(u, o.mixAt, 0.7)); }
-    if (foci.length) {
-      const reg = focusAt(foci, u, dur), on = eOutCubic(ramp(u, 0.95, 0.6)), zm = 1 + 0.07 * eInOut(ramp(u, 1.0, dur - 1.4));
-      args.zoom = zm; args.focus = [(reg[0] + reg[2]) / 2, (reg[1] + reg[3]) / 2]; args.spot = { rect: reg, dim: on, ring: on * (0.75 + 0.25 * Math.sin(u * 2.2)) };
-    }
-    if (o.behind) o.behind(u, dur, px, py, pw);
+    // le téléphone agrandi s'efface en douceur à l'approche du titre et de la légende (le décor, lui, reste intact)
+    const zz = zoneOf();
+    MK = PORTRAIT ? [0, 0, (zz.top + 6) / H, (zz.top + 92) / H, amount] : [0.47, 0.54, 0.125, 0.172, amount];
+    if (o.behind) o.behind(u, dur, pp[0], pp[1], pwz);
     phone(args);
-    if (o.extra) o.extra(u, dur, l, px, py, pw);
+    if (base.watch) { const wp = applyS(st, base.watch.x, base.watch.y), e = eOutExpo(ramp(u, 0.5, 1.1));
+      watchObj({ x: wp[0], y: wp[1] - (1 - e) * 60, z: 0, w: base.watch.w * st.Z, a: Math.min(1, e * 2.5) }); }
+    MK = [0, 0, 0, 0, 0];
     drawOverlayBegin();
     caps(S.tag, l.x, l.tag, eOutCubic(ramp(u, 0.1, 0.4)));
     const w = 150 * eOutExpo(ramp(u, 0.15, 0.5));
     quad({ x: l.x + w / 2 - W / 2, y: H / 2 - (l.tag + 42), w, h: 4, mode: 1, tint: [0.3, 0.7, 1, 1], a: 1, ortho: true });
     const bottom = title(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.12, 0.8));
     if (S.chips && S.chips.length) chips(S.chips, bottom, u, l);
+    // légende du composant mis en avant, juste au-dessus de lui
+    if (lab && labA > 0.01) { const zn = zoneOf(), txt = lab[lang] || lab.fr, size = PORTRAIT ? 30 : 24, sx = zn.cx + W / 2, yy = PORTRAIT ? zn.top - 44 : H * 0.075 + 16;
+      caps(txt, sx, yy, labA, { size, center: true, color: "#8fe0ff" });
+      quad({ x: zn.cx, y: H / 2 - (yy + size + 22), w: 56 * labA, h: 3, mode: 1, tint: [0.34, 0.8, 1, 0.9], a: 1, ortho: true }); }
     return {};
   }
   const sceneDash = (u, dur) => { const T = TXT[lang];
-    return sceneDevice({ tag: T.dashTag, title: T.dash, it: T.dashIt, chips: [] }, "m1", "dashboard", u, dur, { foci: [[0.03, 0.345, 0.97, 0.525], [0.03, 0.535, 0.97, 0.725], [0.03, 0.825, 0.97, 0.935]] }); };
+    return sceneDevice({ tag: T.dashTag, title: T.dash, it: T.dashIt, chips: [] }, "m1", "dashboard", u, dur, { foci: [
+      { r: [0.03, 0.354, 0.97, 0.520], label: { fr: "Ta vitesse en direct", en: "Your live speed" } },
+      { r: [0.03, 0.537, 0.97, 0.721], label: { fr: "La météo de la station", en: "Resort weather" } }] }); };
   const sceneFeature = (idx, bg, screen, u, dur, o) => sceneDevice(TXT[lang].scenes[idx], bg, screen, u, dur, o);
   const FEATURES = [
-    ["m2", "model3d", { foci: [[0.03, 0.05, 0.97, 0.205], [0.04, 0.82, 0.96, 0.955]] }],
-    ["m3", "speedmap", { foci: [[0.04, 0.80, 0.96, 0.945]] }],
-    ["m4", "lock", { foci: [[0.05, 0.09, 0.95, 0.22], [0.03, 0.707, 0.97, 0.859]] }],
-    ["m5", "fall", { foci: [[0.12, 0.17, 0.88, 0.545], [0.05, 0.60, 0.95, 0.81]] }],
-    ["m6", "groups", { foci: [[0.04, 0.345, 0.96, 0.725]] }],
-    ["m1", "replay", { tex2: "share", mixAt: 1.9 }],
-    ["m7", "discover", { foci: [[0.03, 0.19, 0.97, 0.30]], tex2: "discovermap", mixAt: 2.2 }],
+    ["m2", "model3d", { foci: [
+      { r: [0.04, 0.32, 0.92, 0.72], label: { fr: "Ta descente, sur le relief 3D", en: "Your run on real 3D terrain" } },
+      { r: [0.035, 0.833, 0.965, 0.958], label: { fr: "Rejoue-la à ta vitesse", en: "Replay it at your pace" } }] }],
+    ["m3", "speedmap", { foci: [
+      { r: [0.12, 0.11, 0.88, 0.17], label: { fr: "Du bleu au rouge, selon ta vitesse", en: "Blue to red, by speed" } },
+      { r: [0.10, 0.52, 0.98, 0.82], label: { fr: "Ta trace, virage après virage", en: "Your track, turn after turn" } }] }],
+    ["m4", "lock", { watch: true, foci: [
+      { r: [0.04, 0.714, 0.97, 0.852], label: { fr: "Live Activity sur l'écran verrouillé", en: "Live Activity on the Lock Screen" } },
+      { watch: true, label: { fr: "Et au poignet, d'un regard", en: "And on your wrist, at a glance" } }] }],
+    ["m5", "fall", { foci: [
+      { r: [0.10, 0.215, 0.90, 0.50], label: { fr: "Un choc ? SnowLine le détecte", en: "A crash? SnowLine detects it" } },
+      { r: [0.08, 0.565, 0.92, 0.745], label: { fr: "Tout va bien ? Sinon, le 112 en un geste", en: "All good? If not, 112 in one tap" } }] }],
+    ["m6", "groups", { foci: [
+      { r: [0.04, 0.395, 0.96, 0.80], label: { fr: "Le classement du groupe, en direct", en: "Your group's live ranking" } }] }],
+    ["m1", "replay", { tex2: "share", mixAt: 2.3, foci: [
+      { center: true, z: 1.08 }, { out: true }], t0: 0.9, gap: 1.2 }],
+    ["m7", "discover", { tex2: "discovermap", mixAt: 2.7, foci: [
+      { r: [0.03, 0.205, 0.97, 0.312], label: { fr: "Cherche une station, filtre par pays", en: "Search any resort, filter by country" } },
+      { out: true }], gap: 1.45 }],
   ];
   function featureScene(i, u, dur) {
     const f = FEATURES[i], o = Object.assign({}, f[2]);
-    if (i === 2) { o.dx = PORTRAIT ? -150 : -120;                                 // la montre prend la place à droite du téléphone
-      o.extra = (uu, d, l, px, py, pw) => { const e = eOutExpo(ramp(uu, 0.5, 1.1)), w = PORTRAIT ? 290 : 250, wx = px + pw / 2 + w * 0.62 + (PORTRAIT ? 30 : 60);
-        watchObj({ x: wx, y: py + (PORTRAIT ? 150 : 90) - (1 - e) * 60, z: 0, w, a: Math.min(1, e * 2.5) }); }; }
+    if (i === 2) o.dx = PORTRAIT ? -150 : -120;                                  // la montre prend la place à droite du téléphone
     if (i === 3) o.behind = (uu, d, px, py, pw) => { const ph = (uu * 1.1) % 1; quad({ x: px, y: py, z: -40, w: pw * 2.4, h: pw * 2.4, mode: 7, tint: [1, 0.25, 0.2, 0.30 * (1 - ph)], aux: [0.22 + 0.62 * ph, 7], add: true }); };
     return sceneFeature(i, f[0], f[1], u, dur, o);
   }
