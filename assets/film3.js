@@ -315,7 +315,7 @@ void main(){
       list["share-" + l] = "share-" + l + ".webp"; list["watch-" + l] = "watch-" + l + ".webp";
     }
     list["replay-fr"] = "hd/replay-fr.webp";
-    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=5").then(i => { TEX[k] = makeTexture(i); })));
+    await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=6").then(i => { TEX[k] = makeTexture(i); })));
     TEX["replay-en"] = TEX["replay-fr"];
     ready = true; loading = false;
   }
@@ -512,7 +512,7 @@ void main(){
   /* ───────────── appareils : toujours de face (jamais inclinés), formes officielles, ombres douces ───────────── */
   const PN = 4.6;                                           // exposant des coins « continus » de l'iPhone
   /* ombre diffuse : l'aplat SDF s'éteint vers ses bords, le quad est donc plus grand que l'objet de la moitié de la zone d'extinction */
-  function softShadow(cx, cy, z, bw, bh, r, kk, a, n = PN) {
+  function softShadow(cx, cy, z, bw, bh, r, kk, a, n = 2.5) {
     const m = kk * 0.7;
     quad({ x: cx, y: cy, z, w: bw + m * 2, h: bh + m * 2, r: r + m, n, mode: 4, aux: [kk, 0], a });
   }
@@ -520,7 +520,7 @@ void main(){
 
   /* châssis officiel de l'iPhone 17 Pro Max (art vectoriel du Simulateur Xcode, 474×990 pt, écran 440×956 pt à (17,17)) */
   function phone(o) {
-    const k = o.w / 474, FW = 474 * k, FH = 990 * k, sw = 440 * k, sh = 956 * k, bw = 470 * k, bh = 986 * k, rb = 86 * k;
+    const k = o.w / 474, FW = 474 * k, FH = 990 * k, sw = 440 * k, sh = 956 * k, bw = 470 * k, bh = 986 * k, rb = 93.5 * k;
     const a = o.a == null ? 1 : o.a, z0 = o.z || 0, cx = o.x, cy = o.y, glow = o.glow == null ? 1 : o.glow;
     if (glow > 0) quad({ x: cx, y: cy, z: z0 - 30, w: FW * 2.4, h: FH * 1.4, mode: 5, tint: [0.12, 0.42, 1, 0.20 * glow], aux: [4.8, 0], a, add: true });
     softShadow(cx, cy - bw * 0.10, z0 - 20, bw, bh, rb, bw * 0.24, a * 0.50);
@@ -528,7 +528,7 @@ void main(){
     // zone visible de la capture (zoom doux vers un point), puis écran, puis châssis par-dessus : le trou du châssis épouse l'écran
     const z = Math.max(1, o.zoom || 1), f = o.focus || [0.5, 0.5], hw = 0.5 / z, fx = clamp(f[0], hw, 1 - hw), fy = clamp(f[1], hw, 1 - hw);
     const rect = [fx - hw, fy - hw, fx + hw, fy + hw];
-    const sc = { x: cx, y: cy, z: z0 + 0.3, w: sw + 1, h: sh + 1, r: 52 * k, a, rect, mode: 0 };
+    const sc = { x: cx, y: cy, z: z0 + 0.3, w: sw + 1, h: sh + 1, r: 80.2 * k, n: 2.7, a, rect, mode: 0 };
     quad(Object.assign({ tex: o.tex }, sc));
     if (o.tex2 && o.mix > 0) quad(Object.assign({}, sc, { tex: o.tex2, a: a * o.mix }));
     const ph = { cx, cy, z: z0, k, sw, sh, rect, a };
@@ -540,7 +540,7 @@ void main(){
   function spotlight(ph, reg, dimA, ringA) {
     const r = ph.rect, X = n => (n - r[0]) / (r[2] - r[0]), Y = n => (n - r[1]) / (r[3] - r[1]), pad = 8 * ph.k;
     const x0 = X(reg[0]), x1 = X(reg[2]), y0 = Y(reg[1]), y1 = Y(reg[3]);
-    const base = { x: ph.cx, y: ph.cy, z: ph.z + 0.5, w: ph.sw + 1, h: ph.sh + 1, r: 52 * ph.k,
+    const base = { x: ph.cx, y: ph.cy, z: ph.z + 0.5, w: ph.sw + 1, h: ph.sh + 1, r: 80.2 * ph.k, n: 2.7,
       light: [((x0 + x1) / 2 - 0.5) * ph.sw, -((y0 + y1) / 2 - 0.5) * ph.sh], aux: [(x1 - x0) / 2 * ph.sw + pad, (y1 - y0) / 2 * ph.sh + pad], bezel: 44 * ph.k };
     if (dimA > 0.002) quad(Object.assign({ mode: 9, tint: [0.01, 0.03, 0.07, 0.52 * dimA], a: ph.a }, base));
     if (ringA > 0.002) quad(Object.assign({ mode: 10, tint: [0.34, 0.80, 1, 0.9 * ringA], a: ph.a, add: true, z: ph.z + 0.6 }, base));
@@ -549,11 +549,11 @@ void main(){
   /* Apple Watch Series 11 46 mm : boîtier officiel seul (sans bracelet), de face */
   function watchObj(o) {
     const T = tx("watch"); if (!T || !TEX["watch-frame"]) return;
-    const k = o.w / 512, FW = 512 * k, FH = 582 * k, a = o.a == null ? 1 : o.a, z0 = o.z || 0, cx = o.x, cy = o.y, bw = 496 * k, bh = 576 * k, rb = 150 * k;
+    const k = o.w / 512, FW = 512 * k, FH = 582 * k, a = o.a == null ? 1 : o.a, z0 = o.z || 0, cx = o.x, cy = o.y, bw = 496 * k, bh = 576 * k, rb = 160 * k;
     quad({ x: cx, y: cy, z: z0 - 30, w: FW * 2.4, h: FH * 1.8, mode: 5, tint: [0.12, 0.42, 1, 0.16], aux: [4.8, 0], a, add: true });
-    softShadow(cx - 5 * k, cy - bw * 0.10, z0 - 20, bw, bh, rb, bw * 0.24, a * 0.50);
-    softShadow(cx - 5 * k, cy - bw * 0.022, z0 - 10, bw, bh, rb, bw * 0.05, a * 0.55);
-    quad({ tex: T, mode: 0, x: cx - 5 * k, y: cy, z: z0 + 0.3, w: 418 * k, h: 498 * k, r: 40 * k, a });
+    softShadow(cx - 5 * k, cy - bw * 0.10, z0 - 20, bw, bh, rb, bw * 0.24, a * 0.50, 2.3);
+    softShadow(cx - 5 * k, cy - bw * 0.022, z0 - 10, bw, bh, rb, bw * 0.05, a * 0.55, 2.3);
+    quad({ tex: T, mode: 0, x: cx - 5 * k, y: cy, z: z0 + 0.3, w: 417 * k, h: 497 * k, r: 123.7 * k, n: 2.5, a });
     quad({ tex: TEX["watch-frame"], mode: 0, x: cx, y: cy, z: z0 + 0.7, w: FW, h: FH, a });
   }
 
