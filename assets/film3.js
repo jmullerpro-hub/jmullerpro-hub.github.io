@@ -857,12 +857,6 @@ void main(){
     const res = drawSlot(cur, tt) || {};
     if (cur !== 11) hud(tt, chapterOf(cur), cur === 0 ? eOutCubic(ramp(tt, 1, 0.8)) : 1);
     if (res.fadeIn) { drawOverlayBegin(); quad({ x: 0, y: 0, w: W, h: H, mode: 1, tint: [0, 0, 0, 1], a: res.fadeIn, ortho: true }); }
-    // balayage lumineux de la marque (dégradé de vitesse) à chaque changement de scène
-    ensureGrad(); drawOverlayBegin();
-    for (let i = 1; i < SLOTS.length; i++) { const d = tt - SLOTS[i][0];
-      if (d >= -0.06 && d < 0.6) { const e = eOutCubic((d + 0.06) / 0.66), y = H * (1 - e), al = (1 - e);
-        quad({ tex: gradTex, x: 0, y: H / 2 - y, w: W, h: 14, rect: [0, 0, 1, 1], a: al, add: true, ortho: true, mode: 0 });
-        quad({ tex: gradTex, x: 0, y: H / 2 - y, w: W, h: 120, rect: [0, 0, 1, 1], a: al * 0.12, add: true, ortho: true, mode: 0 }); } }
     // flashs sur le « drop » et l'accent final
     let flash = 0; for (const f of [bar(6), bar(24)]) { const d = tt - f; if (d >= 0 && d < 0.5) flash = Math.max(flash, Math.pow(1 - d / 0.5, 2)); }
     let shock = [0, 0]; for (const f of [bar(6), bar(24)]) { const d = tt - f; if (d >= 0 && d < 0.9) shock = [d * 1.3, 1 - d / 0.9]; }
