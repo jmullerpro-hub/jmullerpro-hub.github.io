@@ -20,6 +20,7 @@
   const eOutCubic = x => 1 - Math.pow(1 - x, 3);
   const eOutQuart = x => 1 - Math.pow(1 - x, 4);
   const eInOut = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const eInOutQuart = x => x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
   const eInOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
   const eOutBack = x => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
   const ramp = (u, s, l) => clamp((u - s) / l);
@@ -139,6 +140,13 @@ void main(){
     float dh = sdRR(p-uLight,uAux,uBezel,2.); c = vec4(uTint.rgb, uTint.a*smoothstep(-3.,14.,dh));
   } else if(uMode==10){                          // liseré lumineux autour de cette zone
     float dh = sdRR(p-uLight,uAux,uBezel,2.); float ln = exp(-pow(dh*.5,2.)), gl = exp(-abs(dh)/15.)*.34; c = vec4(uTint.rgb*(ln+gl), (ln+gl)*uTint.a);
+  } else if(uMode==12){                          // reflet : bande étroite, inclinée, qui n'éclaire que la forme visible du logo (alpha de la texture) + halo discret
+    float wx = uLight.x + vP.x*uSize.x, wy = uBezel + vP.y*uSize.y;
+    float d = ((wx - uAux.x) + uLight.y*wy)/uAux.y, band = exp(-d*d);
+    float a0 = texture(uTex, vUV).a, bl = 0.; vec2 pxs = 5./uSize;
+    for(int i=0;i<8;i++){ float an = float(i)*.785398; bl += texture(uTex, vUV + vec2(cos(an),sin(an))*pxs).a; } bl /= 8.;
+    float halo = max(bl - a0*.5, 0.)*exp(-d*d*.30);
+    c = vec4(vec3(.80,.92,1.)*a0*band*.60 + vec3(.38,.76,1.)*halo*.95, 1.); m = 1.;
   } else if(uMode==7){                           // anneau pulsé
     float r = length(vP)*2.; float ring = exp(-pow((r-uAux.x)*uAux.y,2.)); c = vec4(uTint.rgb*ring, ring*uTint.a); m=1.;
   }
@@ -322,7 +330,26 @@ void main(){
     list["replay-fr"] = "hd/replay-fr.webp";
     await Promise.all(Object.entries(list).map(([k, v]) => loadImg(BASE + v + "?v=6").then(i => { TEX[k] = makeTexture(i); })));
     TEX["replay-en"] = TEX["replay-fr"];
-    ready = true; loading = false;
+    ready = true; loading = false; loadClips();
+  }
+  /* capture réelle du replay : suite d'images (20 i/s) tirée d'un enregistrement de l'app. Elle suit la timeline du film
+     (pause, saut, retour au début : toujours l'image qui correspond à l'instant). Chargée après le film, jamais bloquante. */
+  const CLIP = { chase: { n: 80, fps: 20, c0: 0, imgs: [], lang: "", tex: null, idx: -1, fallback: "speedmap" } };
+  function loadClips() {
+    if (reduce) return;                                       // mouvement réduit : captures fixes
+    for (const name in CLIP) { const c = CLIP[name]; if (c.lang === lang) continue; c.lang = lang; c.imgs = new Array(c.n).fill(null); c.idx = -1;
+      const lg = lang, queue = [...Array(c.n).keys()];
+      const worker = () => { const i = queue.shift(); if (i === undefined || c.lang !== lg) return;
+        const im = new Image(); im.decoding = "async"; im.onload = () => { if (c.lang === lg) c.imgs[i] = im; worker(); }; im.onerror = worker; im.src = BASE + "clips/" + name + "-" + lg + "/" + String(i).padStart(2, "0") + ".jpg"; };
+      for (let w = 0; w < 4; w++) worker(); }
+  }
+  /* image à afficher à l'instant u de la scène : la plus proche déjà chargée (jamais une image du futur) */
+  function clipTexture(name, u) {
+    const c = CLIP[name]; if (!c || !c.imgs.length) return null;
+    let i = Math.min(c.n - 1, Math.max(0, Math.floor((c.c0 + u) * c.fps)));
+    while (i > 0 && !c.imgs[i]) i--; if (!c.imgs[i]) return null;
+    if (i !== c.idx || !c.tex) { if (c.tex) gl.deleteTexture(c.tex.tex); c.tex = makeTexture(c.imgs[i]); c.idx = i; }
+    return c.tex;
   }
   const tx = k => TEX[k + "-" + lang] || TEX[k + "-fr"] || TEX[k];
 
@@ -490,13 +517,29 @@ void main(){
     mountTex = makeTexture(c, { mip: false }); mountTex.k = 1 / w; mountTex.pad = pad; mountTex.gw = w; mountTex.gh = h;
   }
   /* le logo : le mot « SnowLine » (jamais en capitales) avec la montagne de la marque, pic au-dessus du L (voir SnowBrandMark.swift) */
+  let LOGO = { peakX: 0, apexY: 0 };
   function lockup(x, baseY, size, a, o = {}) {
     ensureMount(); const kern = -size * 0.02, ww = measureStr("SnowLine", size, 700, false, true, kern);
     const x0 = o.center ? x - ww / 2 : o.right ? x - ww : x;
-    plain("SnowLine", x0, baseY, size, a, { sans: true, weight: 700, kern, color: o.color });
+    plain("SnowLine", x0, baseY, size, a, { sans: true, weight: 700, kern, color: o.color || (o.shine ? "#cee0f6" : undefined) });
     const mw = size * 1.32, k = mw / mountTex.gw, peak = x0 + ww * 0.565, left = peak - 0.64 * mw, bottom = baseY - size * 0.80;
     const tw = (mountTex.gw + mountTex.pad * 2) * k, th = (mountTex.gh + mountTex.pad * 2) * k;
-    quad({ tex: mountTex, x: left - mountTex.pad * k + tw / 2 - W / 2, y: H / 2 - (bottom - mountTex.gh * k - mountTex.pad * k + th / 2) , w: tw, h: th, a, ortho: true, mode: 0 });
+    const mx = left - mountTex.pad * k + tw / 2 - W / 2, my = H / 2 - (bottom - mountTex.gh * k - mountTex.pad * k + th / 2);
+    quad({ tex: mountTex, x: mx, y: my, w: tw, h: th, a, ortho: true, mode: 0 });
+    LOGO = { peakX: peak - W / 2, apexY: H / 2 - (bottom - mountTex.gh * k) };
+    if (o.shine && o.shine.on > 0 && !reduce) {        // reflet : le même passage éclaire le mot et la montagne
+      const sh = o.shine, bandC = (x0 - W / 2) - size * 0.45 + sh.p * (ww + size * 0.9), hw = size * 0.15, slope = 0.34;
+      const e = textTex("SnowLine", size, { weight: 700, sans: true, kern, color: "#ffffff" });
+      const qx = x0 - W / 2 + e.w / 2 - e.pad, qy = H / 2 - (baseY - e.base) - e.h / 2;
+      quad({ tex: e.tex, x: qx, y: qy, w: e.w, h: e.h, ortho: true, mode: 12, add: true, a: sh.on, aux: [bandC, hw], light: [qx, slope], bezel: qy });
+      quad({ tex: mountTex, x: mx, y: my, w: tw, h: th, ortho: true, mode: 12, add: true, a: sh.on, aux: [bandC, hw], light: [mx, slope], bezel: my });
+      // petit éclat sur le sommet de la montagne, au moment du passage
+      const dx = (bandC - LOGO.peakX) / (size * 0.22), sp = Math.exp(-dx * dx) * sh.on;
+      if (sp > 0.01) {
+        quad({ x: LOGO.peakX, y: LOGO.apexY, w: size * 0.9, h: size * 0.9, mode: 5, tint: [0.62, 0.86, 1, 0.50 * sp], aux: [4.2, 0], add: true, ortho: true });
+        quad({ x: LOGO.peakX, y: LOGO.apexY, w: size * 1.5, h: size * 0.22, mode: 6, tint: [0.85, 0.95, 1, 0.55 * sp], aux: [7, 7], add: true, ortho: true });
+      }
+    }
     return ww;
   }
   /* pastille « verre » ; retourne sa largeur */
@@ -574,6 +617,9 @@ void main(){
     out.push(p[p.length - 1]); return out;
   }
   const TRACE = catmull(PATH, 22);
+  const INTRO_PATH = {
+    land: catmull([[0.735, 0.69], [0.72, 0.725], [0.70, 0.78], [0.665, 0.86], [0.62, 0.95], [0.575, 1.05]], 22),
+    port: catmull([[0.84, 0.735], [0.66, 0.80], [0.47, 0.865], [0.33, 0.94], [0.22, 1.05]], 22) };
   const speedProfile = p => Math.pow(Math.sin(Math.min(p / 0.72, 1) * Math.PI / 2), 1.15) * (1 - 0.22 * clamp((p - 0.72) / 0.28));
   const STOPS = [[0.176, 0.482, 1], [0.18, 0.77, 1], [1, 0.82, 0.25], [1, 0.3, 0.24]];
   function speedRGB(p) { const q = clamp(p) * 3, i = Math.min(Math.floor(q), 2), f = q - i, a = STOPS[i], b = STOPS[i + 1]; return [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f)]; }
@@ -584,8 +630,8 @@ void main(){
     x.fillStyle = g; x.fillRect(0, 0, 64, 64); ribbonTex = makeTexture(c, { mip: false });
   }
   function drawRibbon(info, prog, o = {}) {
-    ensureDot(); const n = TRACE.length, head = Math.floor((n - 1) * prog), lift = o.lift == null ? 60 : o.lift;
-    const pts = []; for (let i = 0; i <= head; i++) pts.push(onPhoto(info, TRACE[i][0], TRACE[i][1], lift));
+    ensureDot(); const PT = o.path || TRACE, n = PT.length, head = Math.floor((n - 1) * prog), lift = o.lift == null ? 60 : o.lift;
+    const pts = []; for (let i = 0; i <= head; i++) pts.push(onPhoto(info, PT[i][0], PT[i][1], lift));
     for (let pass = 0; pass < 3; pass++) {
       for (let i = 0; i < pts.length; i++) {
         const q = pts[i], c = speedRGB(speedProfile(i / (n - 1))), k = i / Math.max(1, pts.length - 1);
@@ -630,18 +676,19 @@ void main(){
   }
   function chips(list, bottom, u, l) {
     let cx = l.x, cy = bottom + 24;
-    list.forEach((c, i) => { const w = chip(c, cx, cy, ramp(u, 0.9 + i * 0.3, 0.55)); if (PORTRAIT) cx += w + 14; else cy += 92; });
+    list.slice(0, 1).forEach((c, i) => { const w = chip(c, cx, cy, ramp(u, 0.9 + i * 0.3, 0.55)); if (PORTRAIT) cx += w + 14; else cy += 92; });
   }
 
   function sceneIntro(u, dur, tt) {
     const k = eInOut(clamp(u / dur)), l = L(), key = PORTRAIT ? "m7" : "hero";
-    setCamera({ dz: -(220 * k) + 60 * Math.sin(tt * 0.5), x: 0, y: 0, yaw: -0.05 + 0.1 * k });
+    setCamera({ dz: -(380 * eOutCubic(clamp(u / 3.6))) + 40 * Math.sin(tt * 0.5), x: 0, y: 0, yaw: -0.05 + 0.1 * k });
     const sun = PORTRAIT ? [0.235, 0.36] : [0.866, 0.336];
     const info = drawBG(key, { zoom: 1.22 - 0.1 * k, cy: PORTRAIT ? 0.58 : 0.52, camx: -0.02 * k + 0.012, top: 0.55, bot: 0.7, dim: 0.06, blur: 1.1, focus: 0.9 });
     // soleil : halo + traînée anamorphique qui bat avec la musique
     const so = onPhoto(info, sun[0], sun[1], 4), pu = pulse(tt);
     quad({ x: so.x, y: so.y, z: so.z, w: 1000 * so.sc, h: 1000 * so.sc, mode: 5, tint: [1, 0.72, 0.38, 0.46 + 0.04 * pu], aux: [3.6, 0], add: true });
     quad({ x: so.x, y: so.y, z: so.z, w: W * 1.3 * so.sc, h: 120 * so.sc, mode: 6, tint: [1, 0.85, 0.6, 0.20 + 0.03 * pu], aux: [9, 3.2], add: true });
+    { const g = Math.pow(clamp((u - 0.25) / 3.3), 1.35); if (g > 0.002) drawRibbon(info, g, { path: PORTRAIT ? INTRO_PATH.port : INTRO_PATH.land, lift: 40 }); }   // le ruban entraîne le regard dès la première seconde
     drawParticles(0.9, 330);
     drawOverlayBegin();
     if (PORTRAIT) {
@@ -698,7 +745,7 @@ void main(){
 
   function sceneDevice(S, bg, screen, u, dur, o = {}) {
     FLIP = !PORTRAIT && !!o.flip;
-    const l = L(), k = u / dur, enter = eOutExpo(ramp(u, 0.05, 1.1)), foci = o.foci || [];
+    const l = L(), k = u / dur, enter = o.cover ? 1 : eOutExpo(ramp(u, 0.05, 1.1)), foci = o.foci || [], td = o.td || 0;
     const t0 = o.t0 || 0.95, gap = o.gap || 1.4, TR = 0.85;
     setCamera({ dz: 70 * (1 - eOutCubic(ramp(u, 0, 1.8))) + 30 * k, x: 0, y: 0 });
     drawBG(bg, { zoom: 1.14 + 0.05 * k, cy: 0.56, camx: 0.03 * (k - 0.5), top: 0.46, bot: 0.24, dim: 0.05, blur: 1.6, focus: 0.84, zb: 520, left: PORTRAIT ? 0 : 0.50, tint: [0.96, 1.0, 1.10] });
@@ -707,11 +754,17 @@ void main(){
     if (o.watch) { const w = PORTRAIT ? 290 : 250; base.watch = { w, x: base.x + base.pw / 2 + w * 0.62 + (PORTRAIT ? 30 : 60), y: base.y + (PORTRAIT ? 150 : 90) }; }
     // état de la caméra : on enchaîne les mises au point
     let st = ID_STATE, amount = 0, lab = null, labA = 0;
+    if (o.cover) {   // l'écran remplit le cadre (la vraie app en plein écran), puis la caméra recule et révèle le téléphone
+      const k0 = base.pw / 474, sw0 = 440 * k0, sh0 = 956 * k0;
+      const cov = { Z: PORTRAIT ? Math.max(W / sw0, H / sh0) * 1.015 : (H / sh0) * 1.0, P: [base.x, base.y], T: [0, 0] };
+      st = mixState(cov, ID_STATE, eInOutQuart(ramp(u, o.coverAt || 1.0, 1.25)));
+    }
     foci.forEach((f, i) => { const ti = t0 + i * gap, e = eInOut(ramp(u, ti, TR)); st = mixState(st, focusState(f, base), e);
       if (f.label) { const a = ramp(u, ti + TR * 0.7, 0.4) * (1 - (i + 1 < foci.length ? ramp(u, t0 + (i + 1) * gap, 0.3) : 0)); if (a > labA) { labA = a; lab = f.label; } } });
-    amount = clamp(Math.log(st.Z) / Math.log(1.6));
+    amount = clamp(Math.log(st.Z) / Math.log(1.6)) * (o.cover ? ramp(u, (o.coverAt || 1.0) + 1.25, 0.4) : 1);
     const pp = applyS(st, base.x, base.y), pwz = base.pw * st.Z;
-    const args = { tex: tx(screen), x: pp[0], y: pp[1], z: 0, w: pwz, a: Math.min(1, enter * 3) };
+    const clipName = screen.indexOf("clip:") === 0 ? screen.slice(5) : null, scr = clipName ? (clipTexture(clipName, u) || tx(CLIP[clipName].fallback)) : tx(screen);
+    const args = { tex: scr, x: pp[0], y: pp[1], z: 0, w: pwz, a: Math.min(1, enter * 3) };
     if (o.tex2) { args.tex2 = tx(o.tex2); args.mix = eInOut(ramp(u, o.mixAt, 0.7)); }
     // le téléphone agrandi s'efface en douceur à l'approche du titre et de la légende (le décor, lui, reste intact)
     const zz = zoneOf();
@@ -722,11 +775,11 @@ void main(){
       watchObj({ x: wp[0], y: wp[1] - (1 - e) * 60, z: 0, w: base.watch.w * st.Z, a: Math.min(1, e * 2.5) }); }
     MK = [0, 0, 0, 0, 0];
     drawOverlayBegin();
-    caps(S.tag, l.x, l.tag, eOutCubic(ramp(u, 0.1, 0.4)));
-    const w = 150 * eOutExpo(ramp(u, 0.15, 0.5));
+    caps(S.tag, l.x, l.tag, eOutCubic(ramp(u - td, 0.1, 0.4)));
+    const w = 150 * eOutExpo(ramp(u - td, 0.15, 0.5));
     quad({ x: l.x + w / 2 - W / 2, y: H / 2 - (l.tag + 42), w, h: 4, mode: 1, tint: [0.3, 0.7, 1, 1], a: 1, ortho: true });
-    const bottom = title(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.12, 0.8));
-    if (S.chips && S.chips.length) chips(S.chips, bottom, u, l);
+    const bottom = title(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u - td, 0.12, 0.8));
+    if (S.chips && S.chips.length) chips(S.chips, bottom, u - td, l);
     // légende du composant mis en avant, juste au-dessus de lui
     if (lab && labA > 0.01) { const zn = zoneOf(), txt = lab[lang] || lab.fr, size = PORTRAIT ? 30 : 24, sx = zn.cx + W / 2, yy = PORTRAIT ? zn.top - 44 : (FLIP ? H * 0.108 : H * 0.075 + 16);
       caps(txt, sx, yy, labA, { size, center: true, color: "#8fe0ff" });
@@ -740,15 +793,13 @@ void main(){
       { r: [0.03, 0.537, 0.97, 0.721], label: { fr: "La météo de la station", en: "Resort weather" } }] }); };
   const sceneFeature = (idx, bg, screen, u, dur, o) => sceneDevice(TXT[lang].scenes[idx], bg, screen, u, dur, o);
   const FEATURES = [
-    ["m2", "model3d", { foci: [
-      { r: [0.04, 0.32, 0.92, 0.72], label: { fr: "Ta descente, sur le relief 3D", en: "Your run on real 3D terrain" } },
-      { r: [0.035, 0.833, 0.965, 0.958], label: { fr: "Rejoue-la à ta vitesse", en: "Replay it at your pace" } }] }],
+    ["m2", "clip:chase", { cover: true, coverAt: 0.9, td: 1.75, t0: 2.4, foci: [{ center: true, z: 1.07 }] }],   // replay : la vraie app en plein cadre, puis la caméra recule
     ["m3", "speedmap", { flip: true, foci: [
       { r: [0.12, 0.11, 0.88, 0.17], label: { fr: "Du bleu au rouge, selon ta vitesse", en: "Blue to red, by speed" } },
       { r: [0.10, 0.52, 0.98, 0.82], label: { fr: "Ta trace, virage après virage", en: "Your track, turn after turn" } }] }],
-    ["m4", "lock", { watch: true, foci: [
+    ["m4", "lock", { watch: true, t0: 0.8, gap: 0.95, foci: [
       { r: [0.04, 0.714, 0.97, 0.852], label: { fr: "Live Activity sur l'écran verrouillé", en: "Live Activity on the Lock Screen" } },
-      { watch: true, label: { fr: "Et au poignet, d'un regard", en: "And on your wrist, at a glance" } }] }],
+      { watch: true, zmax: 2.7, label: { fr: "Et au poignet, d'un regard", en: "And on your wrist, at a glance" } }] }],
     ["m5", "fall", { flip: true, foci: [
       { r: [0.10, 0.215, 0.90, 0.50], label: { fr: "Un choc ? SnowLine le détecte", en: "A crash? SnowLine detects it" } },
       { r: [0.08, 0.565, 0.92, 0.745], label: { fr: "Tout va bien ? Sinon, le 112 en un geste", en: "All good? If not, 112 in one tap" } }] }],
@@ -810,7 +861,8 @@ void main(){
     quad({ tex: TEX.icon, x: 0, y: H / 2 - cy - (1 - e) * 40, z: 40, w: S, h: S, r: S * 0.225, a: e });
     drawOverlayBegin();
     const wsz = PORTRAIT ? 150 : 128, wy2 = cy + S / 2 + (PORTRAIT ? 210 : 190);
-    lockup(W / 2, wy2 + (1 - eOutExpo(ramp(u, 0.35, 1.2))) * 40, wsz, eOutExpo(ramp(u, 0.35, 1)), { center: true });
+    const sp = clamp((u - 1.72) / 0.75), shine = { p: sp * sp * (3 - 2 * sp), on: (u >= 1.72 && u <= 2.55) ? 1 : 0 };   // 47,6 s → 48,4 s : un seul passage, calé sur la musique
+    lockup(W / 2, wy2 + (1 - eOutExpo(ramp(u, 0.35, 1.2))) * 40, wsz, eOutExpo(ramp(u, 0.35, 1)), { center: true, shine });
     caps(T.tagline, W / 2, wy2 + 36, eOutCubic(ramp(u, 0.9, 0.8)), { center: true, size: 27 });
     const bp = eOutBack(ramp(u, 1.3, 0.8)), bs = PORTRAIT ? 28 : 24, kern = 4, bt = T.badge.toUpperCase(), bw = measureStr(bt, bs, 700, false, true, kern) + 86, bh = bs * 3.6, by = wy2 + 130;
     quad({ x: 0, y: H / 2 - (by + bh / 2), w: bw * (0.8 + 0.2 * bp), h: bh * (0.8 + 0.2 * bp), r: bh / 2, mode: 1, tint: [1, 1, 1, 1], a: Math.min(1, bp * 2), ortho: true });
@@ -852,23 +904,19 @@ void main(){
     const cur = slotAt(tt), HALF = 0.26;
     // intensité de la traversée (flou radial) autour de chaque coupe
     let warp = 0;
-    for (let i = 1; i < SLOTS.length; i++) { const d = Math.abs(tt - SLOTS[i][0]); if (d < HALF) warp = Math.max(warp, 1 - d / HALF); }
+    for (let i = 1; i < SLOTS.length; i++) { const d = Math.abs(tt - SLOTS[i][0]); const kw = (i === 1 || i === 3 || i === 11) ? 1 : 0.3; if (d < HALF) warp = Math.max(warp, kw * (1 - d / HALF)); }   // accents marqués seulement : lancement, replay, signature
     warp = Math.pow(warp, 1.2);
     // scène
     gl.bindFramebuffer(gl.FRAMEBUFFER, FB.ms.fbo); gl.viewport(0, 0, CW, CH);
     gl.clearColor(0.01, 0.02, 0.04, 1); gl.clear(gl.COLOR_BUFFER_BIT); gl.disable(gl.DEPTH_TEST);
     const res = drawSlot(cur, tt) || {};
-    if (cur !== 11) hud(tt, chapterOf(cur), cur === 0 ? eOutCubic(ramp(tt, 1, 0.8)) : 1);
+    if (cur !== 11) hud(tt, chapterOf(cur), cur === 0 ? eOutCubic(ramp(tt, 1, 0.8)) : cur === 3 ? eOutCubic(ramp(tt - SLOTS[3][0], 2.0, 0.5)) : 1);
     if (res.fadeIn) { drawOverlayBegin(); quad({ x: 0, y: 0, w: W, h: H, mode: 1, tint: [0, 0, 0, 1], a: res.fadeIn, ortho: true }); }
-    // signature : le balayage lumineux « vitesse » ne passe plus que sur l'arrivée du logo (plus à chaque coupe)
-    ensureGrad(); drawOverlayBegin();
-    { const d = tt - SLOTS[SLOTS.length - 1][0];
-      if (d >= -0.06 && d < 0.6) { const e = eOutCubic((d + 0.06) / 0.66), y = H * (1 - e), al = (1 - e);
-        quad({ tex: gradTex, x: 0, y: H / 2 - y, w: W, h: 14, rect: [0, 0, 1, 1], a: al, add: true, ortho: true, mode: 0 });
-        quad({ tex: gradTex, x: 0, y: H / 2 - y, w: W, h: 120, rect: [0, 0, 1, 1], a: al * 0.12, add: true, ortho: true, mode: 0 }); } }
     // flashs sur le « drop » et l'accent final
-    let flash = 0; for (const f of [bar(6), bar(24)]) { const d = tt - f; if (d >= 0 && d < 0.5) flash = Math.max(flash, Math.pow(1 - d / 0.5, 2)); }
+    let flash = 0; for (const [f, g] of [[bar(6), 1], [bar(24), 0.35]]) { const d = tt - f; if (d >= 0 && d < 0.5) flash = Math.max(flash, g * Math.pow(1 - d / 0.5, 2)); }   // le flash final reste discret : il ne doit pas noyer le reflet du logo
+    if (reduce) flash = 0;
     let shock = [0, 0]; for (const f of [bar(6), bar(24)]) { const d = tt - f; if (d >= 0 && d < 0.9) shock = [d * 1.3, 1 - d / 0.9]; }
+    if (reduce) { shock = [0, 0]; warp = 0; }
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, FB.ms.fbo); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, FB.scene.fbo); gl.blitFramebuffer(0, 0, CW, CH, 0, 0, CW, CH, gl.COLOR_BUFFER_BIT, gl.NEAREST);
     const fade = tt > TOTAL - 1.1 ? clamp((tt - (TOTAL - 1.1)) / 1.1) : 0;
     postProcess(tt, warp, flash, shock, fade);
@@ -942,7 +990,7 @@ void main(){
       }), { threshold: 0.2 }).observe(hostEl);
       if (reduce) t = 14.6;
     },
-    setLang(l) { lang = l; if (ready && !running) renderFrame(t); },
+    setLang(l) { lang = l; if (ready) loadClips(); if (ready && !running) renderFrame(t); },
     get time() { return t; }, get total() { return TOTAL; }, get playing() { return playing; }, get sound() { return soundOn; },
     chapters: SLOTS.slice(3, 10).map(s => s[0]),
     seek(s) { t = clamp(s, 0, TOTAL - 0.05); if (soundOn) audio.currentTime = t; if (ready && !running) renderFrame(t); },

@@ -202,6 +202,48 @@
     ctx.fillStyle = lin(0, py, 0, py + ph, [[0, nv(0.4)], [0.4, nv(0)], [1, nv(0.4)]]); ctx.fillRect(px, py, pw, ph);
     return box;
   }
+  /* le logo : mot « SnowLine » (jamais en capitales) + montagne de la marque, pic au-dessus du L à 56,5 % de la largeur du mot — même dessin que film3.js */
+  let lkC = null;
+  function lockup(x, baseY, size, alpha, o = {}) {
+    const kern = -size * 0.02, ww = measure("SnowLine", size, 700, false, true, kern), x0 = o.center ? x - ww / 2 : x;
+    const mw = size * 1.32, mh = mw * 0.34, peak = x0 + ww * 0.565, left = peak - 0.64 * mw, bottom = baseY - size * 0.8;
+    const P = [[0, 1], [0.24, 0.40], [0.38, 0.62], [0.64, 0], [1, 1]];
+    const mount = c => { c.beginPath(); P.forEach((q, i) => { const px = left + q[0] * mw, py = bottom - mh + q[1] * mh; i ? c.lineTo(px, py) : c.moveTo(px, py); }); };
+    const paint = (c, a) => {
+      c.save(); c.globalAlpha = a;
+      const g = c.createLinearGradient(0, bottom - mh, 0, bottom); g.addColorStop(0, "rgba(255,255,255,.30)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      mount(c); c.fillStyle = g; c.fill();
+      c.shadowColor = "rgba(140,217,255,.7)"; c.shadowBlur = size * 0.16; c.strokeStyle = "rgba(255,255,255,.95)"; c.lineWidth = mw * 0.036; c.lineCap = "round"; c.lineJoin = "round"; mount(c); c.stroke();
+      c.restore();
+    };
+    text("SnowLine", x0, baseY, { size, weight: 700, sans: true, kern, alpha, color: o.shine ? "rgb(206,224,246)" : undefined });
+    paint(ctx, alpha);
+    const sh = o.shine;
+    if (sh && sh.on > 0 && !reduce) {                 // reflet : un seul passage, limité à la forme du logo
+      const bx = x0 - size * 0.45 + sh.p * (ww + size * 0.9), hw = size * 0.15, sl = 0.34, pad = Math.ceil(size * 0.6);
+      const rx = Math.floor(x0 - pad), ry = Math.floor(bottom - mh - pad), rw = Math.ceil(ww + pad * 2), rh = Math.ceil(baseY - ry + pad);
+      if (!lkC) lkC = document.createElement("canvas");
+      if (lkC.width !== rw || lkC.height !== rh) { lkC.width = rw; lkC.height = rh; }
+      const c = lkC.getContext("2d"); c.clearRect(0, 0, rw, rh); c.save(); c.translate(-rx, -ry);
+      c.font = `700 ${size}px ${SANS}`; if ("letterSpacing" in c) c.letterSpacing = kern + "px"; c.fillStyle = "rgb(214,238,255)"; c.textBaseline = "alphabetic"; c.fillText("SnowLine", x0, baseY);
+      paint(c, 1); c.restore();
+      c.globalCompositeOperation = "destination-in";                       // ne garde que la bande lumineuse, à l'intérieur de la forme du logo
+      const gx0 = bx - hw * 2 - rx, gx1 = bx + hw * 2 - rx, g = c.createLinearGradient(gx0, 0, gx1, 0);
+      g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      c.save(); c.translate(bx - rx, baseY - ry); c.transform(1, 0, -sl, 1, 0, 0); c.translate(-(bx - rx), -(baseY - ry));   // bande légèrement inclinée
+      c.fillStyle = g; c.fillRect(gx0, -rh, gx1 - gx0, rh * 3); c.restore();
+      c.globalCompositeOperation = "source-over";
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.85 * sh.on; ctx.drawImage(lkC, rx, ry);
+      if ("filter" in ctx) { ctx.filter = `blur(${size * 0.07}px)`; ctx.globalAlpha = 0.6 * sh.on; ctx.drawImage(lkC, rx, ry); }   // halo discret (ignoré si non supporté)
+      ctx.restore();
+      const dx = (bx - peak) / (size * 0.22), spk = Math.exp(-dx * dx) * sh.on;     // petit éclat sur le sommet
+      if (spk > 0.01) {
+        ctx.save(); ctx.globalCompositeOperation = "lighter"; glow(peak, bottom - mh, size * 0.5, `rgba(158,220,255,${0.5 * spk})`);
+        { const sg = ctx.createLinearGradient(peak - size * 0.75, 0, peak + size * 0.75, 0); sg.addColorStop(0, "rgba(217,242,255,0)"); sg.addColorStop(0.5, `rgba(217,242,255,${0.6 * spk})`); sg.addColorStop(1, "rgba(217,242,255,0)"); ctx.fillStyle = sg; ctx.fillRect(peak - size * 0.75, bottom - mh - 1.5, size * 1.5, 3); } ctx.restore();
+      }
+    }
+    return ww;
+  }
   function hud(tt, chapter, alpha = 1) {
     ctx.save(); ctx.globalAlpha = alpha;
     const m = PORTRAIT ? 64 : W * 0.07, p = clamp(tt / TOTAL);
@@ -209,7 +251,7 @@
     ctx.fillStyle = lin(m, 0, W - m, 0, [[0, speedColor(0)], [0.34, speedColor(0.34)], [0.68, speedColor(0.68)], [1, speedColor(1)]]);
     ctx.fillRect(m, 28, (W - 2 * m) * p, 7);
     ctx.restore();
-    text("SnowLine", m, 66 + 38 * 0.8 - 20, { size: 38, weight: 600, kern: -0.8, alpha });
+    lockup(m, 94, 34, alpha);
     if (chapter) text(String(chapter).padStart(2, "0") + " / 07", W - m, 90, { size: 32, align: "right", color: "rgb(188,208,237)", alpha });
   }
 
@@ -353,19 +395,21 @@
     if (PORTRAIT) backdrop(7, u, dur, tt, { z0: 1.12, z1: 1, ay: 0.6, dim: 0.34 });
     else { cover(IMG.hero, { x: 0, y: 0, w: W, h: H }, 1.12 - 0.1 * eInOut(clamp(u / dur)), 0.5, 0.6); ctx.fillStyle = nv(0.5); ctx.fillRect(0, 0, W, H); }
     snow(tt, 90);
-    const e = eOutExpo(ramp(u, 0.2, 1.2)), cy = PORTRAIT ? 660 : H * 0.3, S = PORTRAIT ? 200 : 150, cx = W / 2;
+    const e = eOutExpo(ramp(u, 0.2, 1.2)), cy = PORTRAIT ? H * 0.34 : H * 0.3, S = PORTRAIT ? 200 : 150, cx = W / 2;
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; glow(cx, cy, S * 1.6, `rgba(51,140,255,${0.5 * e})`); ctx.restore();
     ctx.save(); ctx.globalAlpha = e;
     ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18;
     rr(cx - S / 2, cy - S / 2 + (1 - e) * 40, S, S, S * 0.225); ctx.fillStyle = "rgb(0,94,189)"; ctx.fill(); ctx.shadowColor = "transparent";
     ctx.save(); rr(cx - S / 2, cy - S / 2 + (1 - e) * 40, S, S, S * 0.225); ctx.clip(); ctx.drawImage(IMG.icon, cx - S / 2, cy - S / 2 + (1 - e) * 40, S, S); ctx.restore();
     ctx.restore();
-    const wsz = PORTRAIT ? 170 : 150, wy = cy + S / 2 + (PORTRAIT ? 190 : 170);
-    text("SnowLine", cx, wy + (1 - eOutExpo(ramp(u, 0.35, 1.2))) * 40, { size: wsz, weight: 500, kern: -6, align: "center", alpha: eOutExpo(ramp(u, 0.35, 1)) });
-    caps(T.tagline, cx, wy + 50, { center: true, alpha: eOutCubic(ramp(u, 0.9, 0.8)), size: 30 });
-    const bp = eOutBack(ramp(u, 1.3, 0.8)), bs = PORTRAIT ? 30 : 26, kern = 4, bt = T.badge.toUpperCase(), bw = measure(bt, bs, 700, false, true, kern) + 90, bh = bs * 3.6;
-    ctx.save(); ctx.translate(cx, wy + 150 + bh / 2); ctx.scale(0.8 + 0.2 * bp, 0.8 + 0.2 * bp); ctx.globalAlpha = Math.min(1, bp * 2);
+    const wsz = PORTRAIT ? 150 : 128, wy2 = cy + S / 2 + (PORTRAIT ? 210 : 190);
+    const sp = clamp((u - 1.72) / 0.75), shine = { p: sp * sp * (3 - 2 * sp), on: (u >= 1.72 && u <= 2.55) ? 1 : 0 };
+    lockup(cx, wy2 + (1 - eOutExpo(ramp(u, 0.35, 1.2))) * 40, wsz, eOutExpo(ramp(u, 0.35, 1)), { center: true, shine });
+    caps(T.tagline, cx, wy2 + 24, { center: true, alpha: eOutCubic(ramp(u, 0.9, 0.8)), size: 27 });
+    const bp = eOutBack(ramp(u, 1.3, 0.8)), bs = PORTRAIT ? 28 : 24, kern = 4, bt = T.badge.toUpperCase(), bw = measure(bt, bs, 700, false, true, kern) + 86, bh = bs * 3.6;
+    ctx.save(); ctx.translate(cx, wy2 + 130 + bh / 2); ctx.scale(0.8 + 0.2 * bp, 0.8 + 0.2 * bp); ctx.globalAlpha = Math.min(1, bp * 2);
     rr(-bw / 2, -bh / 2, bw, bh, bh / 2); ctx.fillStyle = "#fff"; ctx.fill();
-    text(bt, -bw / 2 + 45, bs * 0.36, { size: bs, weight: 700, sans: true, kern, color: "rgb(5,13,23)" }); ctx.restore();
+    text(bt, -bw / 2 + 43, bs * 0.36, { size: bs, weight: 700, sans: true, kern, color: "rgb(5,13,23)" }); ctx.restore();
   }
 
   /* ───── ligne de temps ───── */
@@ -469,6 +513,10 @@
       return soundOn;
     },
     togglePlay() { playing = !playing; userPaused = !playing; if (soundOn) { if (playing) { audio.currentTime = t; audio.play().catch(() => {}); } else audio.pause(); } if (playing) start(); return playing; },
+    /* outils internes (captures) */
+    async load() { await loadAll(); resize(); },
+    freeze() { playing = false; stop(); },
+    renderAt(s) { t = clamp(s, 0, TOTAL); frame(t); },
     restart() { t = 0; userPaused = false; playing = true; if (soundOn) { audio.currentTime = 0; audio.play().catch(() => {}); } start(); return playing; },
   };
   if (!window.SnowFilm) window.SnowFilm = api;
