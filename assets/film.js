@@ -27,21 +27,21 @@
       scenes: [
         { tag: "Replay 3D", title: "Revis chaque descente sur le vrai relief.", it: 5, chips: ["Vue Poursuite", "Maquette 3D en AR"] },
         { tag: "Carte", title: "Ta vitesse, tracée sur la montagne.", it: 3, chips: ["Du bleu au rouge", "Hors connexion"] },
-        { tag: "Écran verrouillé · Apple Watch", title: "Sans sortir le téléphone.", it: 1, chips: ["Dynamic Island", "Cadran Apple Watch"] },
+        { tag: "Écran verrouillé · Apple Watch", title: "Sans sortir le téléphone.", it: 1, chips: ["Dynamic Island", "App Apple Watch"] },
         { tag: "Sécurité", title: "Une chute ? SnowLine s'en rend compte.", it: 4, chips: ["Détection d'impact", "Secours en un geste"] },
         { tag: "Groupes", title: "Défie tes amis.", it: 1, chips: ["Classement en direct", "Vitesse · Dénivelé · Descentes"] },
         { tag: "Partage", title: "Ta plus belle descente, en story.", it: 4, chips: ["Story Instagram", "20 s sur le vrai relief"] },
         { tag: "Découvrir", title: "Les stations du monde entier.", it: 1, chips: ["Pistes et remontées", "Même depuis ton canapé"] }],
       intro: "Ta journée de ski, comme tu ne l'as jamais vue.", introIt: 7, introTag: "Ski tracker & GPS",
-      traceTag: "Chaque virage, tracé", traceSub: "2,5 km  ·  832 m de dénivélé",
+      traceTag: "Chaque virage, tracé", traceSub: "2,5 km  ·  832 m de dénivelé",
       dashTag: "Tableau de bord", dash: "Tout ton ski en un coup d'œil.", dashIt: 3, dashChips: ["Vitesse max", "Dénivelé", "Météo"],
-      finale: "Gratuit. Sans compte. Sans pub.", finaleIt: 3, stats: ["compte à créer", "pub ni pisteur", "langues", "pays"],
+      finale: "Gratuit. Sans compte. Sans pub.", finaleIt: 3, stats: ["compte à créer", "pub ni pisteur", "langues", "pays et régions"],
       tagline: "Ton ski, comme jamais", badge: "Gratuit sur l'App Store" },
     en: {
       scenes: [
         { tag: "3D replay", title: "Relive every run on real terrain.", it: 5, chips: ["Chase view", "3D model in AR"] },
         { tag: "Map", title: "Your speed, drawn on the mountain.", it: 3, chips: ["Blue to red", "Works offline"] },
-        { tag: "Lock Screen · Apple Watch", title: "No need to take your phone out.", it: 5, chips: ["Dynamic Island", "Apple Watch dial"] },
+        { tag: "Lock Screen · Apple Watch", title: "No need to take your phone out.", it: 5, chips: ["Dynamic Island", "Apple Watch app"] },
         { tag: "Safety", title: "A fall? SnowLine notices.", it: 3, chips: ["Impact detection", "One tap to call for help"] },
         { tag: "Groups", title: "Challenge your friends.", it: 1, chips: ["Live leaderboard", "Speed · Vertical · Runs"] },
         { tag: "Sharing", title: "Your best run, in a story.", it: 4, chips: ["Instagram Story", "20 s on real terrain"] },
@@ -49,7 +49,7 @@
       intro: "Your ski day, like you've never seen it.", introIt: 5, introTag: "Ski tracker & GPS",
       traceTag: "Every turn, drawn", traceSub: "2.5 km  ·  832 m vertical",
       dashTag: "Dashboard", dash: "Your whole day at a glance.", dashIt: 4, dashChips: ["Top speed", "Vertical", "Weather"],
-      finale: "Free. No account. No ads.", finaleIt: 3, stats: ["account to create", "ads or trackers", "languages", "countries"],
+      finale: "Free. No account. No ads.", finaleIt: 3, stats: ["account to create", "ads or trackers", "languages", "countries and regions"],
       tagline: "Your ski, like never before", badge: "Free on the App Store" },
   };
 
@@ -57,7 +57,7 @@
   let canvas, ctx, off, offCtx, audio, hostEl;
   let W = 1080, H = 1920, PORTRAIT = true, DPR = 1;
   let lang = "fr", t = 0, playing = false, soundOn = false, inView = false, running = false, ready = false, loading = false;
-  let lastNow = 0, reduce = false, chapterCb = null;
+  let userPaused = false, lastNow = 0, reduce = false, chapterCb = null;
   const IMG = {};
   const BASE = "assets/";
 
@@ -345,7 +345,7 @@
       const p = ramp(u, 1.4 + i * 0.25, 1.4), al = eOutCubic(ramp(u, 1.3 + i * 0.25, 0.5)), x = mx + colW * i;
       ctx.fillStyle = `rgba(255,255,255,${0.22 * al})`; ctx.fillRect(x, y0, colW - 22, 2);
       text(String(Math.round(nn * eOutCubic(p))), x, y0 + (PORTRAIT ? 110 : 84), { size: PORTRAIT ? 96 : 72, kern: -3, alpha: al });
-      text(T.stats[i], x, y0 + (PORTRAIT ? 150 : 118), { size: PORTRAIT ? 26 : 22, sans: true, weight: 400, color: "rgb(194,214,240)", alpha: al });
+      text(T.stats[i], x, y0 + (PORTRAIT ? 150 : 118), { size: PORTRAIT ? 22 : 19, sans: true, weight: 400, color: "rgb(194,214,240)", alpha: al });
     });
   }
   function sceneEnd(u, dur, tt) {
@@ -422,7 +422,7 @@
 
   /* ───── lecture ───── */
   function resize() {
-    const r = hostEl.getBoundingClientRect(); if (!r.width || !r.height) return;
+    const r = { width: hostEl.offsetWidth, height: hostEl.offsetHeight }; if (!r.width || !r.height) return;      // taille de mise en page : insensible au scale() CSS du lecteur
     PORTRAIT = r.height >= r.width * 1.05;
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     let cw = Math.round(r.width * DPR), ch = Math.round(r.height * DPR);
@@ -453,7 +453,7 @@
       new ResizeObserver(resize).observe(hostEl); resize();
       new IntersectionObserver(es => es.forEach(e => {
         inView = e.isIntersecting;
-        if (inView) { loadAll().then(() => { resize(); if (!reduce) { playing = true; } start(); if (opts.onReady) opts.onReady(); }); }
+        if (inView) { loadAll().then(() => { resize(); if (!reduce && !userPaused) { playing = true; if (soundOn) { audio.currentTime = t; audio.play().catch(() => { soundOn = false; }); } } start(); if (opts.onReady) opts.onReady(); }); }
         else { playing = false; stop(); if (audio && !audio.paused) audio.pause(); }
       }), { threshold: 0.2 }).observe(hostEl);
       if (reduce) { t = 14.6; }
@@ -464,11 +464,12 @@
     seek(s) { t = clamp(s, 0, TOTAL - 0.05); if (soundOn) audio.currentTime = t; if (ready && !running) frame(t); },
     toggleSound() {
       soundOn = !soundOn;
-      if (soundOn) { audio.currentTime = t; audio.volume = 0.9; audio.play().then(() => { playing = true; start(); }).catch(() => { soundOn = false; }); }
+      if (soundOn) { audio.currentTime = t; audio.volume = 0.9; if (playing) audio.play().catch(() => { soundOn = false; }); }
       else audio.pause();
       return soundOn;
     },
-    togglePlay() { playing = !playing; if (soundOn) { playing ? audio.play().catch(() => {}) : audio.pause(); } if (playing) start(); return playing; },
+    togglePlay() { playing = !playing; userPaused = !playing; if (soundOn) { if (playing) { audio.currentTime = t; audio.play().catch(() => {}); } else audio.pause(); } if (playing) start(); return playing; },
+    restart() { t = 0; userPaused = false; playing = true; if (soundOn) { audio.currentTime = 0; audio.play().catch(() => {}); } start(); return playing; },
   };
   if (!window.SnowFilm) window.SnowFilm = api;
 })();

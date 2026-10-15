@@ -54,7 +54,7 @@
       scenes: [
         { tag: "Replay 3D", title: "Revis chaque descente sur le vrai relief.", it: 5, chips: ["Vue Poursuite", "Maquette 3D en AR"] },
         { tag: "Carte", title: "Ta vitesse, tracée sur la montagne.", it: 3, chips: ["Du bleu au rouge", "Hors connexion"] },
-        { tag: "Écran verrouillé · Apple Watch", title: "Sans sortir le téléphone.", it: 1, chips: ["Dynamic Island", "Cadran Apple Watch"] },
+        { tag: "Écran verrouillé · Apple Watch", title: "Sans sortir le téléphone.", it: 1, chips: ["Dynamic Island", "App Apple Watch"] },
         { tag: "Sécurité", title: "Une chute ? SnowLine s'en rend compte.", it: 4, chips: ["Détection d'impact", "Secours en un geste"] },
         { tag: "Groupes", title: "Défie tes amis.", it: 1, chips: ["Classement en direct", "Vitesse · Dénivelé · Descentes"] },
         { tag: "Partage", title: "Ta plus belle descente, en story.", it: 4, chips: ["Story Instagram", "20 s sur le vrai relief"] },
@@ -62,13 +62,13 @@
       intro: "Ta journée de ski, comme tu ne l'as jamais vue.", introIt: 7, introTag: "Ski tracker & GPS",
       traceTag: "Chaque virage, tracé", traceSub: "2,5 km  ·  832 m de dénivelé",
       dashTag: "Tableau de bord", dash: "Tout ton ski en un coup d'œil.", dashIt: 3, dashChips: ["Vitesse max", "Dénivelé", "Météo"],
-      finale: "Gratuit. Sans compte. Sans pub.", finaleIt: 3, stats: ["compte à créer", "pub ni pisteur", "langues", "pays"],
+      finale: "Gratuit. Sans compte. Sans pub.", finaleIt: 3, stats: ["compte à créer", "pub ni pisteur", "langues", "pays et régions"],
       tagline: "Ton ski, comme jamais", badge: "Gratuit sur l'App Store" },
     en: {
       scenes: [
         { tag: "3D replay", title: "Relive every run on real terrain.", it: 5, chips: ["Chase view", "3D model in AR"] },
         { tag: "Map", title: "Your speed, drawn on the mountain.", it: 3, chips: ["Blue to red", "Works offline"] },
-        { tag: "Lock Screen · Apple Watch", title: "No need to take your phone out.", it: 5, chips: ["Dynamic Island", "Apple Watch dial"] },
+        { tag: "Lock Screen · Apple Watch", title: "No need to take your phone out.", it: 5, chips: ["Dynamic Island", "Apple Watch app"] },
         { tag: "Safety", title: "A fall? SnowLine notices.", it: 3, chips: ["Impact detection", "One tap to call for help"] },
         { tag: "Groups", title: "Challenge your friends.", it: 1, chips: ["Live leaderboard", "Speed · Vertical · Runs"] },
         { tag: "Sharing", title: "Your best run, in a story.", it: 4, chips: ["Instagram Story", "20 s on real terrain"] },
@@ -76,15 +76,15 @@
       intro: "Your ski day, like you've never seen it.", introIt: 5, introTag: "Ski tracker & GPS",
       traceTag: "Every turn, drawn", traceSub: "2.5 km  ·  832 m vertical",
       dashTag: "Dashboard", dash: "Your whole day at a glance.", dashIt: 4, dashChips: ["Top speed", "Vertical", "Weather"],
-      finale: "Free. No account. No ads.", finaleIt: 3, stats: ["account to create", "ads or trackers", "languages", "countries"],
+      finale: "Free. No account. No ads.", finaleIt: 3, stats: ["account to create", "ads or trackers", "languages", "countries and regions"],
       tagline: "Your ski, like never before", badge: "Free on the App Store" },
   };
 
   /* ───────────── état ───────────── */
   let canvas, gl, audio, hostEl, chapterCb = null, readyCb = null;
-  let W = 1080, H = 1920, PORTRAIT = true, CW = 2, CH = 2;
+  let W = 1080, H = 1920, PORTRAIT = true, CW = 2, CH = 2, FLIP = false;     // FLIP : composition inversée (téléphone à gauche, texte à droite) en paysage
   let lang = "fr", t = 0, playing = false, soundOn = false, inView = false, running = false, ready = false, loading = false, reduce = false;
-  let lastNow = 0, frozen = false;
+  let userPaused = false, lastNow = 0, frozen = false;
   const TEX = {};                       // textures chargées
   const BASE = "assets/";
 
@@ -144,7 +144,8 @@ void main(){
   }
   float a = c.a*uAlpha*m;
   if(uMkS>0.){ vec2 f=gl_FragCoord.xy/uView; f.y=1.-f.y;
-    float mk=mix(1.,smoothstep(uMk.x,uMk.y,f.x),step(1e-4,uMk.y-uMk.x))*mix(1.,smoothstep(uMk.z,uMk.w,f.y),step(1e-4,uMk.w-uMk.z));
+    float mx=uMk.x<uMk.y?smoothstep(uMk.x,uMk.y,f.x):1.-smoothstep(uMk.y,uMk.x,f.x);
+    float mk=mix(1.,mx,step(1e-4,abs(uMk.y-uMk.x)))*mix(1.,smoothstep(uMk.z,uMk.w,f.y),step(1e-4,uMk.w-uMk.z));
     a*=mix(1.,mk,uMkS); }
   o = vec4(c.rgb*a, a);
 }`;
@@ -616,7 +617,7 @@ void main(){
   /* ───────────── mise en page ───────────── */
   function L() {
     if (PORTRAIT) { const ph = Math.min(1200, H - 720), pw = ph * 474 / 990; return { x: 64, tag: 140, titleTop: 214, titleSize: 90, titleW: W - 128, pw, px: 0, py: ph / 2 + 30 - H / 2, chipsRow: true }; }
-    return { x: W * 0.07, tag: H * 0.2, titleTop: H * 0.265, titleSize: 80, titleW: W * 0.4, pw: H * 0.405, px: W * 0.2, py: 0, chipsRow: false };
+    return { x: FLIP ? W * 0.55 : W * 0.07, tag: H * 0.2, titleTop: H * 0.265, titleSize: 80, titleW: W * 0.4, pw: H * 0.405, px: FLIP ? -W * 0.2 : W * 0.2, py: 0, chipsRow: false };
   }
 
   /* ───────────── scènes ───────────── */
@@ -679,7 +680,7 @@ void main(){
     g.addColorStop(0, "rgba(4,10,20,0.98)"); g.addColorStop(0.86, "rgba(4,10,20,0.97)"); g.addColorStop(1, "rgba(4,10,20,0)"); x.fillStyle = g; x.fillRect(0, 0, 4, 128); vgTex = makeTexture(c, { mip: false }); }
   function zoneOf() {
     if (PORTRAIT) { const top = 650, bot = H - 70; return { cx: 0, cy: H / 2 - (top + bot) / 2, w: W * 0.94, h: bot - top, top }; }
-    return { cx: W * 0.235, cy: -0.03 * H, w: W * 0.45, h: H * 0.80, top: H * 0.1 };
+    return { cx: (FLIP ? -1 : 1) * W * 0.235, cy: -0.03 * H, w: W * 0.45, h: H * 0.80, top: H * 0.1 };
   }
   const ID_STATE = { Z: 1, P: [0, 0], T: [0, 0] };
   function focusState(f, base) {
@@ -696,6 +697,7 @@ void main(){
   const applyS = (s, x, y) => [s.T[0] + (x - s.P[0]) * s.Z, s.T[1] + (y - s.P[1]) * s.Z];
 
   function sceneDevice(S, bg, screen, u, dur, o = {}) {
+    FLIP = !PORTRAIT && !!o.flip;
     const l = L(), k = u / dur, enter = eOutExpo(ramp(u, 0.05, 1.1)), foci = o.foci || [];
     const t0 = o.t0 || 0.95, gap = o.gap || 1.4, TR = 0.85;
     setCamera({ dz: 70 * (1 - eOutCubic(ramp(u, 0, 1.8))) + 30 * k, x: 0, y: 0 });
@@ -713,7 +715,7 @@ void main(){
     if (o.tex2) { args.tex2 = tx(o.tex2); args.mix = eInOut(ramp(u, o.mixAt, 0.7)); }
     // le téléphone agrandi s'efface en douceur à l'approche du titre et de la légende (le décor, lui, reste intact)
     const zz = zoneOf();
-    MK = PORTRAIT ? [0, 0, (zz.top + 6) / H, (zz.top + 92) / H, amount] : [0.47, 0.54, 0.125, 0.172, amount];
+    MK = PORTRAIT ? [0, 0, (zz.top + 6) / H, (zz.top + 92) / H, amount] : [FLIP ? 0.53 : 0.47, FLIP ? 0.46 : 0.54, 0.125, 0.172, amount];
     if (o.behind) o.behind(u, dur, pp[0], pp[1], pwz);
     phone(args);
     if (base.watch) { const wp = applyS(st, base.watch.x, base.watch.y), e = eOutExpo(ramp(u, 0.5, 1.1));
@@ -726,9 +728,10 @@ void main(){
     const bottom = title(S.title, S.it, l.titleSize, l.x, l.titleTop, l.titleW, ramp(u, 0.12, 0.8));
     if (S.chips && S.chips.length) chips(S.chips, bottom, u, l);
     // légende du composant mis en avant, juste au-dessus de lui
-    if (lab && labA > 0.01) { const zn = zoneOf(), txt = lab[lang] || lab.fr, size = PORTRAIT ? 30 : 24, sx = zn.cx + W / 2, yy = PORTRAIT ? zn.top - 44 : H * 0.075 + 16;
+    if (lab && labA > 0.01) { const zn = zoneOf(), txt = lab[lang] || lab.fr, size = PORTRAIT ? 30 : 24, sx = zn.cx + W / 2, yy = PORTRAIT ? zn.top - 44 : (FLIP ? H * 0.108 : H * 0.075 + 16);
       caps(txt, sx, yy, labA, { size, center: true, color: "#8fe0ff" });
       quad({ x: zn.cx, y: H / 2 - (yy + size + 22), w: 56 * labA, h: 3, mode: 1, tint: [0.34, 0.8, 1, 0.9], a: 1, ortho: true }); }
+    FLIP = false;
     return {};
   }
   const sceneDash = (u, dur) => { const T = TXT[lang];
@@ -740,18 +743,18 @@ void main(){
     ["m2", "model3d", { foci: [
       { r: [0.04, 0.32, 0.92, 0.72], label: { fr: "Ta descente, sur le relief 3D", en: "Your run on real 3D terrain" } },
       { r: [0.035, 0.833, 0.965, 0.958], label: { fr: "Rejoue-la à ta vitesse", en: "Replay it at your pace" } }] }],
-    ["m3", "speedmap", { foci: [
+    ["m3", "speedmap", { flip: true, foci: [
       { r: [0.12, 0.11, 0.88, 0.17], label: { fr: "Du bleu au rouge, selon ta vitesse", en: "Blue to red, by speed" } },
       { r: [0.10, 0.52, 0.98, 0.82], label: { fr: "Ta trace, virage après virage", en: "Your track, turn after turn" } }] }],
     ["m4", "lock", { watch: true, foci: [
       { r: [0.04, 0.714, 0.97, 0.852], label: { fr: "Live Activity sur l'écran verrouillé", en: "Live Activity on the Lock Screen" } },
       { watch: true, label: { fr: "Et au poignet, d'un regard", en: "And on your wrist, at a glance" } }] }],
-    ["m5", "fall", { foci: [
+    ["m5", "fall", { flip: true, foci: [
       { r: [0.10, 0.215, 0.90, 0.50], label: { fr: "Un choc ? SnowLine le détecte", en: "A crash? SnowLine detects it" } },
       { r: [0.08, 0.565, 0.92, 0.745], label: { fr: "Tout va bien ? Sinon, le 112 en un geste", en: "All good? If not, 112 in one tap" } }] }],
     ["m6", "groups", { foci: [
       { r: [0.04, 0.395, 0.96, 0.80], label: { fr: "Le classement du groupe, en direct", en: "Your group's live ranking" } }] }],
-    ["m1", "replay", { tex2: "share", mixAt: 2.3, foci: [
+    ["m1", "replay", { flip: true, tex2: "share", mixAt: 2.3, foci: [
       { center: true, z: 1.08 }, { out: true }], t0: 0.9, gap: 1.2 }],
     ["m7", "discover", { tex2: "discovermap", mixAt: 2.7, foci: [
       { r: [0.03, 0.205, 0.97, 0.312], label: { fr: "Cherche une station, filtre par pays", en: "Search any resort, filter by country" } },
@@ -788,7 +791,7 @@ void main(){
       const p = ramp(u, 1.4 + i * 0.25, 1.4), al = eOutCubic(ramp(u, 1.3 + i * 0.25, 0.5)), x = mx + colW * i;
       quad({ x: x + (colW - 22) / 2 - W / 2, y: H / 2 - y0b, w: colW - 22, h: 2, mode: 1, tint: [1, 1, 1, 0.22], a: al, ortho: true });
       plain(String(Math.round(nn * eOutCubic(p))), x, y0b + (PORTRAIT ? 104 : 80), PORTRAIT ? 92 : 70, al, { kern: -3 });
-      plain(T.stats[i], x, y0b + (PORTRAIT ? 148 : 114), PORTRAIT ? 25 : 21, al, { sans: true, color: "#c2d6f0" });
+      plain(T.stats[i], x, y0b + (PORTRAIT ? 148 : 114), PORTRAIT ? 22 : 19, al, { sans: true, color: "#c2d6f0" });
     });
     return {};
   }
@@ -899,7 +902,7 @@ void main(){
 
   /* ───────────── cycle de vie ───────────── */
   function resize() {
-    const r = hostEl.getBoundingClientRect(); if (!r.width || !r.height) return;
+    const r = { width: hostEl.offsetWidth, height: hostEl.offsetHeight }; if (!r.width || !r.height) return;      // taille de mise en page : insensible au scale() CSS du lecteur
     PORTRAIT = r.height >= r.width * 1.05;
     const dpr = Math.min(window.devicePixelRatio || 1, 2); let cw = Math.round(r.width * dpr), ch = Math.round(r.height * dpr);
     const maxPx = PORTRAIT ? 2.4e6 : 3.0e6; if (cw * ch > maxPx) { const s = Math.sqrt(maxPx / (cw * ch)); cw = Math.round(cw * s); ch = Math.round(ch * s); }
@@ -928,7 +931,7 @@ void main(){
       new ResizeObserver(resize).observe(hostEl); resize();
       new IntersectionObserver(es => es.forEach(e => {
         inView = e.isIntersecting;
-        if (inView && !frozen) loadAll().then(() => { if (frozen) return; resize(); if (!reduce) playing = true; start(); if (readyCb) readyCb(); });
+        if (inView && !frozen) loadAll().then(() => { if (frozen) return; resize(); if (!reduce && !userPaused) { playing = true; if (soundOn) { audio.currentTime = t; audio.play().catch(() => { soundOn = false; }); } } start(); if (readyCb) readyCb(); });
         else { playing = false; stop(); if (audio && !audio.paused) audio.pause(); }
       }), { threshold: 0.2 }).observe(hostEl);
       if (reduce) t = 14.6;
@@ -937,8 +940,9 @@ void main(){
     get time() { return t; }, get total() { return TOTAL; }, get playing() { return playing; }, get sound() { return soundOn; },
     chapters: SLOTS.slice(3, 10).map(s => s[0]),
     seek(s) { t = clamp(s, 0, TOTAL - 0.05); if (soundOn) audio.currentTime = t; if (ready && !running) renderFrame(t); },
-    toggleSound() { soundOn = !soundOn; if (soundOn) { audio.currentTime = t; audio.volume = 0.9; audio.play().then(() => { playing = true; start(); }).catch(() => { soundOn = false; }); } else audio.pause(); return soundOn; },
-    togglePlay() { playing = !playing; if (soundOn) { playing ? audio.play().catch(() => {}) : audio.pause(); } if (playing) start(); return playing; },
+    toggleSound() { soundOn = !soundOn; if (soundOn) { audio.currentTime = t; audio.volume = 0.9; if (playing) audio.play().catch(() => { soundOn = false; }); } else audio.pause(); return soundOn; },
+    togglePlay() { playing = !playing; userPaused = !playing; if (soundOn) { if (playing) { audio.currentTime = t; audio.play().catch(() => {}); } else audio.pause(); } if (playing) start(); return playing; },
+    restart() { t = 0; userPaused = false; playing = true; if (soundOn) { audio.currentTime = 0; audio.play().catch(() => {}); } start(); return playing; },
     freeze(s) { frozen = true; playing = false; stop(); if (ready) { t = s; renderFrame(s); } },
     renderAt(s) { if (!ready) return; t = s; renderFrame(s); },
     ready() { return ready; },

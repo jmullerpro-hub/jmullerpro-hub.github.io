@@ -126,7 +126,15 @@ h1,.chap h2,.fnd h2,.final h2,.hs h2{text-wrap:balance}
 .vf{position:relative;width:min(92vw,calc(74vh * 16 / 9),1560px);aspect-ratio:16/9;will-change:transform;background:#050d1a;overflow:hidden;box-shadow:0 70px 140px -40px rgba(0,0,0,.9),0 0 120px -30px rgba(45,140,255,.4);cursor:pointer}
 .vf canvas{display:block;width:100%;height:100%}
 .ctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:clamp(12px,2vw,26px);padding:clamp(34px,5vw,64px) clamp(14px,2.4vw,34px) clamp(12px,1.6vw,22px);background:linear-gradient(180deg,rgba(4,10,20,0),rgba(4,10,20,.78));opacity:0;transition:opacity .4s}
-.vf:hover .ctl,.vf:focus-within .ctl,.vf.touch .ctl{opacity:1}
+.vf:hover .ctl,.vf:focus-within .ctl,.vf.touch .ctl,.vf.paused .ctl{opacity:1}
+@media (hover:none),(pointer:coarse){.ctl{opacity:1}}
+.vf:fullscreen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto;transform:none!important;box-shadow:none;border-radius:0}
+.vf:-webkit-full-screen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto;transform:none!important;box-shadow:none}
+.ctl button{min-width:34px;min-height:34px;justify-content:center;border-radius:8px}
+.ctl button:focus-visible,.scrub:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.tm{font-size:11.5px;letter-spacing:.08em;font-variant-numeric:tabular-nums;color:#dbe7f8;white-space:nowrap;min-width:5.6em;text-align:center}
+.ctl button[hidden]{display:none}
+@media (max-width:640px){#vsndT{display:none}.tm{min-width:0;font-size:11px}.ctl{gap:6px 8px;flex-wrap:wrap;padding-top:46px}.scrub{order:-1;flex:1 0 100%}.tm{margin-right:auto}}
 .ctl button{display:flex;align-items:center;gap:9px;color:#fff;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:650;white-space:nowrap}
 .ctl svg{width:16px;height:16px}
 .scrub{position:relative;flex:1;height:22px;cursor:pointer}
@@ -259,7 +267,7 @@ footer small{display:block;margin-top:12px;font-size:12px}
   <nav class="nav cap">
     <a class="l" href="#fonctions" data-i18n="n1">Fonctions</a>
     <a class="l" href="#film" data-i18n="n2">Le film</a>
-    <a class="l" href="#fondateurs" data-i18n="n3">Fondateurs</a>
+    <a class="l" href="#fondateurs" data-i18n="n3">Offre fondateurs</a>
     <button id="lang" type="button" class="cap">EN</button>
     <a class="dl" href="https://apps.apple.com/app/id6756065022" data-i18n="get">Télécharger</a>
   </nav>
@@ -309,7 +317,7 @@ footer small{display:block;margin-top:12px;font-size:12px}
       <span class="cap" data-i18n="f1e">01 · Tableau de bord</span>
       <h2 data-i18n="f1t">Tout ton ski en un coup d'œil.</h2>
       <p data-i18n="f1p">Descentes et remontées détectées toutes seules grâce au GPS et au baromètre. Tu skies, SnowLine compte.</p>
-      <ul><li data-i18n="f1a">Vitesse max, dénivelé, distance, nombre de descentes</li><li data-i18n="f1b">Météo de la station en km/h et °C ou mph et °F</li><li data-i18n="f1c">Historique jour par jour et courbes de ta journée</li></ul>
+      <ul><li data-i18n="f1a">Vitesse max, dénivelé, distance, nombre de descentes</li><li data-i18n="f1b">Température et vent de la station, en °C et km/h ou °F et mph</li><li data-i18n="f1c">Historique jour par jour et courbes de ta journée</li></ul>
     </div>
     <div class="chap">
       <span class="cap" data-i18n="f2e">02 · Replay 3D</span>
@@ -327,7 +335,7 @@ footer small{display:block;margin-top:12px;font-size:12px}
       <span class="cap" data-i18n="f4e">04 · Écran verrouillé · Apple Watch</span>
       <h2 data-i18n="f4t">Sans sortir le téléphone.</h2>
       <p data-i18n="f4p">Ta session en direct sur l'écran verrouillé et dans la Dynamic Island. Au poignet : vitesse, altitude et distance d'un regard.</p>
-      <ul><li data-i18n="f4a">Live Activity et Dynamic Island</li><li data-i18n="f4b">Cadran Apple Watch</li><li data-i18n="f4c">Widgets de l'écran d'accueil</li></ul>
+      <ul><li data-i18n="f4a">Live Activity et Dynamic Island</li><li data-i18n="f4b">App Apple Watch</li><li data-i18n="f4c">Widgets de l'écran d'accueil</li></ul>
     </div>
     <div class="chap">
       <span class="cap" data-i18n="f5e">05 · Sécurité</span>
@@ -345,9 +353,12 @@ footer small{display:block;margin-top:12px;font-size:12px}
   <div class="vf" id="vf">
     <canvas id="fc" role="img" aria-label="Film de présentation de SnowLine, animation réalisée en code"></canvas>
     <div class="ctl">
-      <button id="fplay" type="button" aria-label="Lecture / pause"><svg viewBox="0 0 16 16" fill="currentColor"><path id="fplayP" d="M3 2h3.4v12H3zM9.6 2H13v12H9.6z"/></svg></button>
-      <div class="scrub" id="scrub"><i id="scrubI"></i></div>
-      <button id="vsnd" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6v4h3l4 3V3L5 6z" fill="currentColor"/><path id="vsndW" d="M11.5 5.5a3.5 3.5 0 0 1 0 5M13 3.5a6 6 0 0 1 0 9"/></svg><span id="vsndT" data-i18n="vs1">Activer le son</span></button>
+      <button id="fplay" type="button" aria-label="Lecture"><svg viewBox="0 0 16 16" fill="currentColor"><path id="fplayP" d="M3 1.5l10 6.5-10 6.5z"/></svg></button>
+      <button id="frst" type="button" aria-label="Revenir au début"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1"/><path d="M2.5 2.2v3.3h3.3"/></svg></button>
+      <span class="tm" id="ftime" aria-hidden="true">0:00 / 0:51</span>
+      <div class="scrub" id="scrub" role="slider" tabindex="0" aria-label="Progression du film" aria-valuemin="0" aria-valuemax="51" aria-valuenow="0" aria-valuetext="0 s sur 51 s"><i id="scrubI"></i></div>
+      <button id="vsnd" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6v4h3l4 3V3L5 6z" fill="currentColor"/><path id="vsndW" d="M11.5 5.5a3.5 3.5 0 0 1 0 5M13 3.5a6 6 0 0 1 0 9"/></svg><span id="vsndT" data-i18n="vs1">Activer le son</span></button>
+      <button id="ffs" type="button" aria-label="Plein écran"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></button>
     </div>
   </div>
   <p class="film-cap cap mut" data-i18n="fc1">Écrans réels de l'app</p>
@@ -368,10 +379,10 @@ footer small{display:block;margin-top:12px;font-size:12px}
     <div class="rv"><b data-n="0">0</b><span data-i18n="s1">compte à créer</span></div>
     <div class="rv"><b data-n="0">0</b><span data-i18n="s2">publicité ni pisteur</span></div>
     <div class="rv"><b data-n="7">0</b><span data-i18n="s3">langues</span></div>
-    <div class="rv"><b data-n="174">0</b><span data-i18n="s4">pays</span></div>
+    <div class="rv"><b data-n="174">0</b><span data-i18n="s4">pays et régions</span></div>
   </div>
   <div class="pro3">
-    <div class="rv"><div class="ln"></div><h3 data-i18n="t1t">Tes données restent à toi</h3><p data-i18n="t1p">Pas de compte, pas de serveur. Tes traces et tes données de santé restent sur ton iPhone.</p></div>
+    <div class="rv"><div class="ln"></div><h3 data-i18n="t1t">Tes données restent à toi</h3><p data-i18n="t1p">Pas de compte SnowLine. Tes traces et tes données de santé restent sur ton iPhone. Si tu crées un groupe, seuls ta vitesse max, ton dénivelé et ton nombre de descentes sont partagés, via iCloud.</p></div>
     <div class="rv"><div class="ln"></div><h3 data-i18n="t2t">Apple Santé</h3><p data-i18n="t2p">Tes journées de ski enregistrées comme séances, sans doublon avec ton Apple Watch.</p></div>
     <div class="rv"><div class="ln"></div><h3 data-i18n="t3t">Bulletins officiels</h3><p data-i18n="t3p">Le risque d'avalanche vient uniquement des bulletins officiels, relayés tels quels.</p></div>
   </div>
@@ -409,25 +420,25 @@ footer small{display:block;margin-top:12px;font-size:12px}
 </main>
 
 <audio id="fa" preload="none" src="assets/film.m4a?v=2"></audio>
-<script src="assets/film3.js?v=8"></script>
-<script src="assets/film.js?v=7"></script>
+<script src="assets/film3.js?v=11"></script>
+<script src="assets/film.js?v=8"></script>
 
 
 <script>
 /* ─── textes ─── */
 const EN={
-  n1:"Features",n2:"The film",n3:"Founders",snd:"Sound",get:"Download",
+  n1:"Features",n2:"The film",n3:"Founding offer",snd:"Sound",get:"Download",
   k1:"Ski tracker & GPS · Season 2026—27",h1a:"Your ski day, like you've",h1b:"never seen it.",
   lead:"3D replay of every run, your speed drawn on the mountain, fall alert. SnowLine tracks it all on its own while your iPhone stays in your pocket.",
   store:"Download on the App Store",free:"Free · iPhone, Apple Watch, iPad",
   mani:"You ski. SnowLine detects every run, every lift, every turn, and hands your day back to you like a film.",maniS:"Replay · Speed · Safety · Friends",
   f1e:"01 · Dashboard",f1t:"Your whole day at a glance.",f1p:"Runs and lifts detected on their own with GPS and the barometer. You ski, SnowLine counts.",
-  f1a:"Top speed, vertical, distance, number of runs",f1b:"Resort weather in mph and °F or km/h and °C",f1c:"Day-by-day history and charts of your day",
+  f1a:"Top speed, vertical, distance, number of runs",f1b:"Resort temperature and wind, in °C and km/h or °F and mph",f1c:"Day-by-day history and charts of your day",
   f2e:"02 · 3D replay",f2t:"Relive every run on real terrain.",f2p:"A camera follows you down the mountain with your speed live. Put a 3D model of your run on the table and spin it with your fingertips.",
   f2a:"Real terrain, a blue-to-red trail by speed",f2b:"Chase, Side and Top views, plus Cinema mode",f2c:"Snowy 3D model, in augmented reality",
   f3e:"03 · Map",f3t:"Your speed, drawn on the mountain.",f3p:"Blue to red, turn after turn, on a winter relief map, with the resort's runs and lifts and their names.",f3a:"Start and finish altitudes of every run and lift",f3b:"Offline maps: your resort stays readable without signal",
   f4e:"04 · Lock Screen · Apple Watch",f4t:"No need to take your phone out.",f4p:"Your live session on the Lock Screen and in the Dynamic Island. On your wrist: speed, altitude and distance at a glance.",
-  f4a:"Live Activity and Dynamic Island",f4b:"Apple Watch dial",f4c:"Home Screen widgets",
+  f4a:"Live Activity and Dynamic Island",f4b:"Apple Watch app",f4c:"Home Screen widgets",
   f5e:"05 · Safety",f5t:"A fall? SnowLine notices.",f5p:"After an impact followed by no movement, SnowLine asks if you're OK. If not, one tap calls emergency services or alerts a loved one.",
   f5n:"Opt-in, with your consent. It is an aid: it can be wrong and never replaces emergency services.",
   giant:"Your run, in motion.",vs1:"Turn sound on",vs0:"Sound off",fc1:"Real app screens",fc2:"Best with sound",
@@ -435,8 +446,8 @@ const EN={
   f6e:"Groups",f6t:"Challenge your friends.",f6p:"Create a group, invite your friends and compare top speed, vertical and distance on a leaderboard.",
   f8e:"Sharing",f8t:"Your best run, in a story.",f8p:"One tap on “Video” and SnowLine films your run: 20 seconds on real terrain, with your speed on the gauge.",
   f7e:"Discover",f7t:"Ski areas worldwide.",f7p:"Runs and lifts of thousands of ski areas, with their names. Tap a run to see its profile, even from your couch.",
-  s1:"account to create",s2:"ads or trackers",s3:"languages",s4:"countries",
-  t1t:"Your data stays yours",t1p:"No account, no server. Your tracks and health data stay on your iPhone.",
+  s1:"account to create",s2:"ads or trackers",s3:"languages",s4:"countries and regions",
+  t1t:"Your data stays yours",t1p:"No SnowLine account. Your tracks and health data stay on your iPhone. If you create a group, only your top speed, vertical and run count are shared, through iCloud.",
   t2t:"Apple Health",t2p:"Your ski days saved as workouts, without duplicating your Apple Watch.",
   t3t:"Official bulletins",t3p:"Avalanche risk comes only from official bulletins, relayed unchanged.",
   oE:"Founding members",oT:"Install it before January 30, 2027. Premium is on us for three seasons.",
@@ -470,7 +481,7 @@ function setLang(l){
   $$("img[data-src]").forEach(i=>i.src="assets/"+i.dataset.src+"-"+l+".webp");
   $$("image[data-src]").forEach(i=>i.setAttribute("href","assets/hd/"+i.dataset.src+"-"+l+".webp"));
   $("#lang").textContent=l==="en"?"FR":"EN";
-  renderH1();renderMani();updDays();syncVsnd();setFilm(l);
+  renderH1();renderMani();updDays();syncVsnd();syncPlay();setFilm(l);
   try{localStorage.setItem("snowline-lang",l)}catch(e){}
   requestAnimationFrame(()=>{ $("#hero").classList.add("go") });
 }
@@ -478,28 +489,51 @@ $("#lang").onclick=()=>setLang(L==="en"?"fr":"en");
 
 /* ─── décompte fondateurs ─── */
 function updDays(){
-  const end=Date.UTC(2027,0,30,22,59,59); // 30 janvier 2027, 23 h 59 heure de Paris
+  const end=Date.UTC(2027,0,29,22,59,59); // règle de l'app : installée AVANT le 30 janvier 2027 à 0 h (Paris), soit jusqu'au 29 janvier à 23 h 59 min 59 s
   const d=Math.ceil((end-Date.now())/86400000);const T=L==="en"?EN:FR;
   $("#days").textContent=d>0?d:"0";$("#daysL").textContent=d>0?T.dl:T.dl0;
 }
 
 /* ─── film en code (canvas) ─── */
 const fa=$("#fa"),vfEl=$("#vf");
-function syncVsnd(){const on=window.SnowFilm&&SnowFilm.sound,T=L==="en"?EN:FR;$("#vsndT").textContent=on?T.vs0:T.vs1;$("#vsndW").style.opacity=on?1:.25}
-function syncPlay(){const pl=window.SnowFilm&&SnowFilm.playing;$("#fplayP").setAttribute("d",pl?"M3 2h3.4v12H3zM9.6 2H13v12H9.6z":"M3 1.5l10 6.5-10 6.5z")}
+const PL={fr:{play:"Lecture",pause:"Pause",rst:"Revenir au début",fs:"Plein écran",fsx:"Quitter le plein écran",prog:"Progression du film",of:"sur",snd:"Activer le son",sndx:"Couper le son"},
+         en:{play:"Play",pause:"Pause",rst:"Back to start",fs:"Full screen",fsx:"Exit full screen",prog:"Film progress",of:"of",snd:"Turn sound on",sndx:"Sound off"}};
+const fmt=x=>{x=Math.max(0,Math.floor(x));return Math.floor(x/60)+":"+String(x%60).padStart(2,"0")};
+function syncVsnd(){const on=!!(window.SnowFilm&&SnowFilm.sound),T=PL[L==="en"?"en":"fr"];$("#vsndT").textContent=on?T.sndx:T.snd;$("#vsnd").setAttribute("aria-label",on?T.sndx:T.snd);$("#vsndW").style.opacity=on?1:.25;$("#vsnd").setAttribute("aria-pressed",on)}
+function syncPlay(){const pl=!!(window.SnowFilm&&SnowFilm.playing),T=PL[L==="en"?"en":"fr"];$("#fplayP").setAttribute("d",pl?"M3 2h3.4v12H3zM9.6 2H13v12H9.6z":"M3 1.5l10 6.5-10 6.5z");
+  $("#fplay").setAttribute("aria-label",pl?T.pause:T.play);vfEl.classList.toggle("paused",!pl);
+  $("#frst").setAttribute("aria-label",T.rst);$("#scrub").setAttribute("aria-label",T.prog);
+  const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);$("#ffs").setAttribute("aria-label",fs?T.fsx:T.fs)}
+let lastSec=-1;
+function onFilmFrame(tt){const T=SnowFilm.total;$("#scrubI").style.width=(tt/T*100)+"%";const sec=Math.floor(tt);
+  if(sec!==lastSec){lastSec=sec;syncPlay();$("#ftime").textContent=fmt(tt)+" / "+fmt(T);const sc=$("#scrub"),P=PL[L==="en"?"en":"fr"];
+    sc.setAttribute("aria-valuemax",Math.round(T));sc.setAttribute("aria-valuenow",sec);sc.setAttribute("aria-valuetext",sec+" s "+P.of+" "+Math.round(T)+" s")}}
 function startFilm(){
-  const opts={canvas:$("#fc"),host:vfEl,audio:fa,onReady:()=>{syncPlay()},onFrame:(tt)=>{$("#scrubI").style.width=(tt/SnowFilm.total*100)+"%"}};
+  const opts={canvas:$("#fc"),host:vfEl,audio:fa,onReady:()=>{syncPlay()},onFrame:onFilmFrame};
   Promise.resolve().then(()=>SnowFilm.init(opts)).catch(err=>{
     console.warn("WebGL indisponible, lecteur 2D :",err);
     const old=$("#fc"),fresh=document.createElement("canvas");fresh.id="fc";fresh.setAttribute("role","img");fresh.setAttribute("aria-label",old.getAttribute("aria-label"));old.replaceWith(fresh);
-    delete window.SnowFilm;const sc=document.createElement("script");sc.src="assets/film.js?v=7";
-    sc.onload=()=>{SnowFilm.init({canvas:$("#fc"),host:vfEl,audio:fa,onReady:()=>{syncPlay()},onFrame:(tt)=>{$("#scrubI").style.width=(tt/SnowFilm.total*100)+"%"}});SnowFilm.setLang(L)};
+    delete window.SnowFilm;const sc=document.createElement("script");sc.src="assets/film.js?v=8";
+    sc.onload=()=>{SnowFilm.init({canvas:$("#fc"),host:vfEl,audio:fa,onReady:()=>{syncPlay()},onFrame:onFilmFrame});SnowFilm.setLang(L)};
     document.head.appendChild(sc);
   });
 }
 startFilm();
 $("#scrub").innerHTML+=SnowFilm.chapters.map(c=>`<b style="left:${c/SnowFilm.total*100}%"></b>`).join("");
-$("#scrub").onclick=e=>{e.stopPropagation();const r=$("#scrub").getBoundingClientRect();SnowFilm.seek((e.clientX-r.left)/r.width*SnowFilm.total)};
+const seekTo=e=>{const r=$("#scrub").getBoundingClientRect();SnowFilm.seek(clamp((e.clientX-r.left)/r.width)*SnowFilm.total)};
+let dragging=false;
+$("#scrub").addEventListener("pointerdown",e=>{e.stopPropagation();dragging=true;$("#scrub").setPointerCapture(e.pointerId);seekTo(e)});
+$("#scrub").addEventListener("pointermove",e=>{if(dragging)seekTo(e)});
+$("#scrub").addEventListener("pointerup",e=>{dragging=false});
+$("#scrub").addEventListener("click",e=>e.stopPropagation());
+$("#scrub").addEventListener("keydown",e=>{const T=SnowFilm.total,t=SnowFilm.time;let n=null;
+  if(e.key==="ArrowRight"||e.key==="ArrowUp")n=t+5;else if(e.key==="ArrowLeft"||e.key==="ArrowDown")n=t-5;else if(e.key==="PageUp")n=t+10;else if(e.key==="PageDown")n=t-10;else if(e.key==="Home")n=0;else if(e.key==="End")n=T-.1;
+  if(n!==null){e.preventDefault();SnowFilm.seek(clamp(n,0,T))}});
+$("#frst").onclick=e=>{e.stopPropagation();SnowFilm.restart&&SnowFilm.restart();syncPlay();syncVsnd()};
+const fsEl=vfEl,canFS=!!(fsEl.requestFullscreen||fsEl.webkitRequestFullscreen);
+if(!canFS)$("#ffs").hidden=true;
+$("#ffs").onclick=e=>{e.stopPropagation();const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);else(fsEl.requestFullscreen||fsEl.webkitRequestFullscreen).call(fsEl)};
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>setTimeout(syncPlay,50)));
 $("#vsnd").onclick=e=>{e.stopPropagation();SnowFilm.toggleSound();setTimeout(syncVsnd,60)};
 $("#fplay").onclick=e=>{e.stopPropagation();SnowFilm.togglePlay();syncPlay()};
 vfEl.onclick=()=>{SnowFilm.togglePlay();syncPlay();vfEl.classList.add("touch");clearTimeout(vfEl._t);vfEl._t=setTimeout(()=>vfEl.classList.remove("touch"),2600)};
@@ -552,7 +586,7 @@ function frame(){
 
   // film : le cadre grandit, le grand texte défile
   {const p=prog(film);fp=lerp(fp,p,K);
-   const s=lerp(.5,1,sm(0,.4,fp));vf.style.transform=reduce?"none":`scale(${s})`;
+   const s=lerp(.8,1,sm(0,.3,fp));vf.style.transform=reduce?"none":`scale(${s})`;
    giant.style.transform=`translate3d(${lerp(6,-64,fp)}vw,-50%,0)`}
 
   // galerie horizontale
