@@ -402,8 +402,8 @@
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = k; ctx.drawImage(off, 0, 0, canvas.width, canvas.height); ctx.restore();
     } else drawSlot(cur, tt);
     if (cur !== 11) hud(tt, chapterOf(cur), cur === 0 ? eOutCubic(ramp(tt, 1, 0.8)) : 1);
-    // balayage lumineux « vitesse » à chaque changement de scène
-    for (let i = 1; i < SLOTS.length; i++) {
+    // signature : balayage lumineux « vitesse » uniquement à l'arrivée du logo
+    for (let i = SLOTS.length - 1; i < SLOTS.length; i++) {
       const d = tt - SLOTS[i][0];
       if (d >= -0.05 && d < 0.55) {
         const e = eOutCubic((d + 0.05) / 0.6), y = H * (1 - e);
