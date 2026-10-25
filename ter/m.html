@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SnowLine – Ski Tracker &amp; GPS</title>
+<meta name="description" content="SnowLine suit tes descentes de ski toute seule : replay 3D sur le vrai relief, vitesse tracée sur la montagne, alerte de chute, classement entre amis. Gratuit sur iPhone, Apple Watch et iPad.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="SnowLine"><meta property="og:title" content="SnowLine – Ski Tracker &amp; GPS">
+<meta property="og:description" content="Revis chaque descente en 3D, sur le vrai relief. Gratuit sur iPhone, Apple Watch et iPad."><meta property="og:image" content="https://jmullerpro-hub.github.io/assets/og.jpg">
+<meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="en_US">
+<meta name="theme-color" content="#27456b"><meta name="color-scheme" content="light">
+<link rel="icon" href="/assets/favicon.png"><link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="preload" as="image" href="hero-m.webp" fetchpriority="high">
+<style>
+:root{--snow:#f5f9fd;--ice:#e6f0fa;--navy:#0b2540;--sub:#3a5271;--blue:#1665d8;--sky:#13a8e8;--line:rgba(11,37,64,.13);
+--speed:linear-gradient(90deg,#2d7bff 0%,#2ec4ff 34%,#ffd23f 68%,#ff4d3d 100%);
+--serif:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+--pad:20px;--top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:var(--snow)}
+body{background:var(--snow);color:var(--navy);font:17px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-bottom:calc(84px + var(--bot))}
+img,video{display:block;max-width:100%}a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;background:none;border:0}
+.cap{font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--blue)}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+.lockup{position:relative;display:inline-block;font-weight:700;letter-spacing:-.02em;line-height:1.1;padding-top:.5em}
+.lockup svg{position:absolute;left:56.5%;top:0;width:1.32em;height:.45em;transform:translateX(-64%);overflow:visible}
+/* barre du haut : blanche sur la photo, claire une fois qu'on a défilé */
+.bar{position:fixed;inset:0 0 auto 0;z-index:40;display:flex;align-items:center;justify-content:space-between;height:calc(56px + var(--top));padding:var(--top) var(--pad) 0;color:#fff;
+background:linear-gradient(rgba(8,30,60,.45),rgba(8,30,60,0));transition:background .3s,color .3s}
+.bar.solid{color:var(--navy);background:rgba(255,255,255,.88);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);box-shadow:0 1px 0 var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-size:21px;min-height:44px}.brand img{width:30px;height:30px;border-radius:7px}
+.langb{min-width:48px;min-height:44px;display:grid;place-items:center;font-size:14px;font-weight:700;letter-spacing:.08em;border:1px solid currentColor;border-radius:22px;padding:0 14px;opacity:.95}
+/* hero : la montagne en haut, une feuille claire en bas (zone du pouce) */
+.hero{position:relative;padding:0;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;background:#27456b}
+.hero .bg{position:absolute;inset:0 0 auto 0;height:74svh}.hero .bg img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.sheet{position:relative;background:var(--snow);border-radius:30px 30px 0 0;padding:26px var(--pad) calc(30px + var(--bot));box-shadow:0 -14px 44px rgba(8,30,60,.22);animation:up .6s .02s backwards cubic-bezier(.16,1,.3,1)}
+@keyframes up{from{transform:translateY(18px)}to{transform:none}}
+.sheet h1{font-size:clamp(34px,10.2vw,44px);line-height:1.05;margin:8px 0 12px;color:var(--navy)}.sheet h1 i{font-style:italic;color:var(--blue)}
+.sheet p.lead{font-size:16.5px;color:var(--sub);margin-bottom:20px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;border-radius:16px;background:linear-gradient(135deg,#1665d8,#1f8bff);color:#fff;font-weight:700;font-size:15px;letter-spacing:.09em;text-transform:uppercase;width:100%;box-shadow:0 10px 26px rgba(22,101,216,.32)}
+.btn svg{width:16px;height:16px}
+.free{display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--sub);font-size:14px;letter-spacing:.05em}.free:before{content:"";width:34px;height:3px;border-radius:2px;background:var(--speed)}
+/* sections */
+section{padding:54px var(--pad)}
+h2{font-family:var(--serif);font-weight:400;font-size:32px;line-height:1.1;letter-spacing:-.01em;margin:10px 0 12px;color:var(--navy)}
+.mani{background:var(--snow)}.mani p{font-family:var(--serif);font-size:25px;line-height:1.32;color:var(--navy)}.mani small{display:block;margin-top:18px;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;font-size:12.5px;font-weight:700}
+/* carrousel des fonctions */
+.fx{padding-left:0;padding-right:0;background:var(--ice)}.fx .hd{padding:0 var(--pad) 18px}
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px var(--pad) 14px;scrollbar-width:none;overscroll-behavior-x:contain}
+.rail::-webkit-scrollbar{display:none}
+.card{flex:0 0 82vw;max-width:340px;scroll-snap-align:center;background:#fff;border:1px solid var(--line);border-radius:26px;padding:16px 18px 22px;display:flex;flex-direction:column;box-shadow:0 12px 34px rgba(11,37,64,.1)}
+.card .plate{background:linear-gradient(180deg,#cfe3f8,#eaf3fc);border-radius:18px;padding:20px 0 0;margin-bottom:16px;overflow:hidden}
+.card .shot{width:62%;margin:0 auto;border-radius:12.5% / 5.8% 5.8% 0 0;overflow:hidden;box-shadow:0 0 0 1px rgba(11,37,64,.14),0 -4px 22px rgba(11,37,64,.2);aspect-ratio:620/900}
+.card .shot img{width:100%;height:auto;aspect-ratio:620/1347}
+.card h3{font-family:var(--serif);font-weight:400;font-size:25px;line-height:1.15;margin:8px 0 8px;color:var(--navy)}
+.card p{color:var(--sub);font-size:16px;line-height:1.5}
+.card ul{list-style:none;margin-top:12px;display:grid;gap:7px}.card li{position:relative;padding-left:16px;font-size:14.5px;color:var(--sub);line-height:1.4}
+.card li:before{content:"";position:absolute;left:0;top:.55em;width:7px;height:2px;border-radius:2px;background:var(--blue)}
+.card .note{margin-top:12px;font-size:13px;color:var(--sub)}
+.dots{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 0 0}.dots i{width:7px;height:7px;border-radius:4px;background:rgba(11,37,64,.2);transition:all .25s}.dots i.on{width:22px;background:var(--blue)}
+.hint{text-align:center;color:var(--sub);font-size:13px;margin-top:10px}
+/* film */
+.film{background:var(--snow)}.film .hd{margin-bottom:18px}
+.vbox{position:relative;border-radius:24px;overflow:hidden;background:#0b2540;box-shadow:0 18px 44px rgba(11,37,64,.25);aspect-ratio:9/16;max-height:78svh;margin:0 auto}
+.vbox video,.vbox .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.play{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(rgba(8,30,60,.1),rgba(8,30,60,.45));min-height:44px}
+.play span{display:flex;align-items:center;gap:12px;background:#fff;color:var(--navy);border-radius:30px;min-height:56px;padding:0 24px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px;box-shadow:0 10px 26px rgba(8,30,60,.3)}
+.play svg{width:18px;height:18px;color:var(--blue)}
+.vmeta{text-align:center;color:var(--sub);font-size:13px;margin-top:12px}
+/* chiffres + confiance */
+.why{background:var(--ice)}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:28px;box-shadow:0 10px 28px rgba(11,37,64,.08)}
+.nums div{padding:20px 8px;text-align:center;border-right:1px solid var(--line)}.nums div:last-child{border-right:0}
+.nums b{display:block;font-family:var(--serif);font-weight:400;font-size:40px;line-height:1;color:var(--blue)}.nums span{display:block;margin-top:8px;font-size:13px;color:var(--sub);line-height:1.3}
+.tr{display:grid;gap:22px}.tr div{padding-left:16px;position:relative}.tr div:before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:3px;border-radius:2px;background:var(--speed)}
+.tr h3{font-family:var(--serif);font-weight:400;font-size:22px;margin-bottom:4px;color:var(--navy)}.tr p{color:var(--sub);font-size:16px}
+/* offre fondateurs */
+.fnd{background:linear-gradient(180deg,var(--snow),#dcebfb)}
+.fnd h2{color:var(--navy)}.fnd p.t{color:var(--sub)}
+.fnd .box{margin-top:22px;border:1px solid var(--line);border-radius:22px;padding:22px;background:#fff;box-shadow:0 14px 36px rgba(11,37,64,.1)}
+.fnd .big{font-family:var(--serif);font-size:64px;line-height:1;color:var(--blue)}.fnd .big+div{color:var(--sub);font-size:14px;margin-bottom:16px}
+.fnd dl{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:16px}.fnd dt{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}.fnd dd{font-family:var(--serif);font-size:20px;color:var(--navy)}
+/* final : plein ciel, pour finir sur une note lumineuse */
+.final{text-align:center;padding:70px var(--pad) 64px;color:#fff;background:linear-gradient(165deg,#0d4fb8 0%,#1f86f2 52%,#7fd0ff 100%)}
+.final h2{color:#fff;margin-bottom:24px}
+.final .btn{background:#fff;color:#0b2540;box-shadow:0 12px 30px rgba(6,40,96,.35)}
+footer{padding:22px var(--pad) 36px;background:var(--ice);color:var(--sub);font-size:14px}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 8px;margin-bottom:14px}footer nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:22px;background:#fff;color:var(--navy)}
+footer small{display:block;line-height:1.5;font-size:12.5px}
+/* bandeau de téléchargement fixe (zone du pouce) */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;gap:12px;padding:10px var(--pad) calc(10px + var(--bot));background:rgba(255,255,255,.9);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 -1px 0 var(--line),0 -10px 30px rgba(11,37,64,.08);transform:translateY(110%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.dock.on{transform:none}.dock img{width:44px;height:44px;border-radius:10px}.dock div{flex:1;line-height:1.2;min-width:0}.dock b{display:block;font-size:16px;color:var(--navy)}.dock span{font-size:13px;color:var(--sub)}
+.dock a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:14px;background:linear-gradient(135deg,#1665d8,#1f8bff);color:#fff;font-weight:700;font-size:13.5px;letter-spacing:.07em;text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.sheet h1{font-size:clamp(32px,9.4vw,40px)}
+.lead2{font-size:16.5px;color:var(--sub);margin:0 0 20px}
+.big{padding:44px var(--pad) 8px;background:var(--snow)}
+.big h2{font-size:30px;margin:0 0 10px}.big p{color:var(--sub);font-size:16.5px}.big p+p{margin-top:10px}
+.big .ph{margin:26px -4px 0;display:flex;justify-content:center}
+.big .ph img{width:78%;height:auto;aspect-ratio:620/1347;border-radius:12.5% / 5.8%;box-shadow:0 22px 50px rgba(11,37,64,.28),0 0 0 1px rgba(11,37,64,.16)}
+.also{padding:40px 0 12px;background:var(--snow)}.also h2{padding:0 var(--pad);font-size:22px;font-family:var(--sans);font-weight:700;margin:0 0 4px;letter-spacing:0}
+.row{display:flex;gap:14px;align-items:center;padding:20px var(--pad) 8px;border-top:1px solid var(--line)}
+.row:nth-of-type(even){flex-direction:row-reverse}
+.row .t{flex:1;min-width:0}.row b{display:block;font-size:18px;line-height:1.25;margin-bottom:4px;color:var(--navy)}.row span{display:block;font-size:15px;line-height:1.45;color:var(--sub)}
+.row .th{flex:0 0 96px;height:128px;border-radius:14px;overflow:hidden;background:#dbe9f8;box-shadow:0 0 0 1px var(--line)}
+.row .th img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.also .end{border-top:1px solid var(--line)}
+.film{background:var(--ice)}.film h2{font-size:26px;margin:0 0 16px}
+.trust{background:var(--snow)}.trust h2{font-size:24px;margin:0 0 14px}.trust p{color:var(--sub);font-size:16px;margin-bottom:12px}.trust b{color:var(--navy)}
+.who{background:var(--ice)}.who h2{font-size:24px;margin:0 0 12px}.who p{font-family:var(--serif);font-size:20px;line-height:1.4;color:var(--navy)}.who .ph{background:#fff3c4;border:1px dashed #c9a400;border-radius:10px;padding:12px 14px;font-family:var(--sans);font-size:14.5px;color:#5a4800;line-height:1.4}.who .sig{margin-top:12px;font-size:15px;color:var(--sub)}
+.fnd{background:var(--snow)}
+.final h2{font-size:30px}
+
+.rings{padding:44px var(--pad) 36px}.rings h2{font-size:30px;margin:0 0 10px}.rings p{color:var(--sub);font-size:16.5px}
+.rings .pair{display:flex;gap:6px;justify-content:center;margin-top:26px;align-items:flex-start}
+.rings .p1,.rings .p2{flex:0 0 48%}.rings .p2{margin-top:34px}
+.rings .dev svg{filter:drop-shadow(0 22px 26px rgba(8,30,60,.4)) drop-shadow(0 4px 7px rgba(8,30,60,.3))}
+.tap{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;color:var(--blue);font-weight:700;font-size:15px}.tap svg{width:20px;height:20px}
+.band{padding:40px var(--pad) 0}.band h2{font-size:28px;margin:0 0 10px}.band p{color:var(--sub);font-size:16.5px}
+.band .cut{height:300px;overflow:hidden;margin:22px 0 0;display:flex;justify-content:center;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+.band .cut .dev{width:62%}
+.band .cut svg{filter:drop-shadow(0 18px 24px rgba(8,30,60,.34))}
+
+.dev svg{display:block;width:100%;height:auto;overflow:visible}
+.big .ph .dev{width:70%}
+.big .ph .dev svg{filter:drop-shadow(0 30px 34px rgba(8,30,60,.42)) drop-shadow(0 5px 9px rgba(8,30,60,.32))}
+.row .th{flex:0 0 142px;height:228px;overflow:hidden;border-radius:0;background:none;box-shadow:none;-webkit-mask-image:linear-gradient(#000 66%,transparent);mask-image:linear-gradient(#000 66%,transparent)}
+.row .th .dev{width:142px}
+.row .th svg{filter:drop-shadow(0 8px 10px rgba(8,30,60,.28))}
+
+/* verre dépoli : la montagne reste visible derrière les surfaces claires */
+html{background:#1d3d63}body{background:transparent}
+.mtn{position:fixed;left:0;right:0;top:0;height:100vh;height:100lvh;z-index:-1;background:#1d3d63 url(hero-m.webp) 50% 28%/cover no-repeat}
+.mtn:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,30,60,.28),rgba(8,30,60,0) 30%),rgba(206,224,244,var(--tint,0))}
+.hero{background:transparent}.hero .bg{display:none}
+.sheet{background:rgba(247,251,255,.68);-webkit-backdrop-filter:blur(26px) saturate(1.6);backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.6);border-bottom:0;box-shadow:0 -10px 40px rgba(8,30,60,.2)}
+.big,.also,.trust,.fnd,.rings,.band{background:rgba(246,250,254,.8)}
+.film,.who{background:rgba(228,239,250,.78)}
+.final{background:linear-gradient(165deg,rgba(13,79,184,.9),rgba(31,134,242,.84) 52%,rgba(127,208,255,.8))}
+footer{background:rgba(228,239,250,.92)}
+.row{border-top-color:rgba(11,37,64,.12)}
+.big .ph img{box-shadow:0 22px 50px rgba(8,30,60,.32),0 0 0 1px rgba(255,255,255,.4)}
+
+@media (min-width:700px){html{background:#c9d9ea}body{max-width:430px;margin:0 auto;box-shadow:0 0 70px rgba(11,37,64,.25)}
+.bar,.dock{left:50%;right:auto;width:100%;max-width:430px;margin-left:-215px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="scrClip"><path d="M376.80 17.00 L386.29 17.09 L392.64 17.37 L398.15 17.84 L403.15 18.49 L407.77 19.33 L412.10 20.36 L416.17 21.57 L420.01 22.96 L423.63 24.54 L427.05 26.30 L430.28 28.24 L433.32 30.37 L436.17 32.67 L438.84 35.16 L441.33 37.83 L443.63 40.68 L445.76 43.72 L447.70 46.95 L449.46 50.37 L451.04 53.99 L452.43 57.83 L453.64 61.90 L454.67 66.23 L455.51 70.85 L456.16 75.85 L456.63 81.36 L456.91 87.71 L457.00 97.20 L457.00 892.80 L456.91 902.29 L456.63 908.64 L456.16 914.15 L455.51 919.15 L454.67 923.77 L453.64 928.10 L452.43 932.17 L451.04 936.01 L449.46 939.63 L447.70 943.05 L445.76 946.28 L443.63 949.32 L441.33 952.17 L438.84 954.84 L436.17 957.33 L433.32 959.63 L430.28 961.76 L427.05 963.70 L423.63 965.46 L420.01 967.04 L416.17 968.43 L412.10 969.64 L407.77 970.67 L403.15 971.51 L398.15 972.16 L392.64 972.63 L386.29 972.91 L376.80 973.00 L97.20 973.00 L87.71 972.91 L81.36 972.63 L75.85 972.16 L70.85 971.51 L66.23 970.67 L61.90 969.64 L57.83 968.43 L53.99 967.04 L50.37 965.46 L46.95 963.70 L43.72 961.76 L40.68 959.63 L37.83 957.33 L35.16 954.84 L32.67 952.17 L30.37 949.32 L28.24 946.28 L26.30 943.05 L24.54 939.63 L22.96 936.01 L21.57 932.17 L20.36 928.10 L19.33 923.77 L18.49 919.15 L17.84 914.15 L17.37 908.64 L17.09 902.29 L17.00 892.80 L17.00 97.20 L17.09 87.71 L17.37 81.36 L17.84 75.85 L18.49 70.85 L19.33 66.23 L20.36 61.90 L21.57 57.83 L22.96 53.99 L24.54 50.37 L26.30 46.95 L28.24 43.72 L30.37 40.68 L32.67 37.83 L35.16 35.16 L37.83 32.67 L40.68 30.37 L43.72 28.24 L46.95 26.30 L50.37 24.54 L53.99 22.96 L57.83 21.57 L61.90 20.36 L66.23 19.33 L70.85 18.49 L75.85 17.84 L81.36 17.37 L87.71 17.09 L97.20 17.00Z"/></clipPath><g id="mkP"><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="currentColor" fill-opacity=".16"/><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></defs></svg>
+
+<header class="bar" id="bar">
+  <a class="brand" href="#top" aria-label="SnowLine"><img src="/assets/icon.png" alt="" width="30" height="30"><span class="lockup">SnowLine<svg viewBox="0 0 100 34" aria-hidden="true"><use href="#mkP"/></svg></span></a>
+  <a class="langb" href="m-en.html" hreflang="en" lang="en" aria-label="English version">EN</a>
+</header>
+
+<div class="mtn" aria-hidden="true"></div>
+<main id="top">
+<section class="hero">
+  <div class="bg"><img src="hero-m.webp" alt="" width="583" height="941" fetchpriority="high"></div>
+  <div class="sheet">
+    <h1 class="serif">Ton ski du jour, enregistré tout seul et rejoué en 3D.</h1>
+    <p class="lead2">Replay 3D de chaque descente, ta vitesse tracée sur la montagne, alerte de chute. SnowLine note tout toute seule, pendant que ton iPhone reste dans ta poche.</p>
+    <a class="btn" id="cta" href="https://apps.apple.com/app/id6756065022">Télécharger sur l'App Store<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></a>
+    <div class="free">Gratuit · iPhone, Apple Watch, iPad</div>
+  </div>
+</section>
+
+<section class="rings" id="fonctions">
+  <h2>Chaque journée, anneau par anneau.</h2>
+  <p>En haut de l'écran, un anneau par jour. Touches-en un et tu ouvres le résumé de cette journée : distance, dénivelé, temps de descente et chutes, puis tes stats, ta meilleure descente et la liste de toutes tes descentes. Un bouton ouvre les graphiques de la journée.</p>
+  <div class="pair"><div class="p1"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Écran Tableau de bord de l&#x27;app SnowLine : vitesse max, dénivelé, distance et nombre de descentes"><g clip-path="url(#scrClip)"><image href="/assets/dashboard-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div><div class="p2"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Résumé de la journée : distance, dénivelé, temps de descente, chutes et liste des descentes"><g clip-path="url(#scrClip)"><image href="days-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div>
+  <div class="tap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Touche un anneau</div>
+</section>
+
+<section class="big">
+  <h2>Revis chaque descente sur le vrai relief.</h2>
+  <p>Une caméra te suit dans la montagne avec ta vitesse en direct. Pose une maquette 3D de ta descente sur la table et fais-la tourner du bout du doigt.</p>
+  <p>Relief réel, trace du bleu au rouge selon la vitesse. Vues Poursuite, Amont et Haute, plus le mode Cinéma.</p>
+  <div class="ph"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Replay 3D d&#x27;une descente sur le relief réel, trace colorée selon la vitesse"><g clip-path="url(#scrClip)"><image href="/assets/model3d-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div>
+</section>
+
+<section class="band">
+  <h2>Ta vitesse, tracée sur la montagne.</h2>
+  <p>Du bleu au rouge, virage après virage, sur une carte de relief d'hiver avec les pistes et remontées de la station et leurs noms.</p>
+  <div class="cut"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Carte d&#x27;hiver avec la vitesse tracée du bleu au rouge sur la montagne"><g clip-path="url(#scrClip)"><image href="/assets/speedmap-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div>
+</section>
+
+<section class="also">
+  <h2>Et pendant la descente</h2>
+  <div class="row"><div class="t"><b>Sans sortir le téléphone.</b><span>Ta session en direct sur l'écran verrouillé et dans la Dynamic Island.</span></div><div class="th"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Écran verrouillé de l&#x27;iPhone avec la session de ski en direct"><g clip-path="url(#scrClip)"><image href="/assets/lock-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div><div class="row"><div class="t"><b>Une chute ? SnowLine s'en rend compte.</b><span>Après un choc suivi d'une immobilité, SnowLine te demande si tout va bien.</span></div><div class="th"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Alerte de chute : SnowLine demande si tout va bien"><g clip-path="url(#scrClip)"><image href="/assets/fall-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div><div class="row"><div class="t"><b>Défie tes amis.</b><span>Crée un groupe, invite tes amis et compare vitesse max, dénivelé et distance dans un classement.</span></div><div class="th"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Classement entre amis dans un groupe SnowLine"><g clip-path="url(#scrClip)"><image href="/assets/groups-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div><div class="row"><div class="t"><b>Ta plus belle descente, en story.</b><span>Un geste sur « Vidéo » et SnowLine filme ta descente : 20 secondes sur le vrai relief, avec ta vitesse sur la jauge.</span></div><div class="th"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Vidéo de la descente à partager en story"><g clip-path="url(#scrClip)"><image href="/assets/share-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div><div class="row"><div class="t"><b>Les stations du monde entier.</b><span>Pistes et remontées de milliers de stations, avec leurs noms.</span></div><div class="th"><div class="dev"><svg viewBox="0 0 474 990" role="img" aria-label="Pistes et remontées d&#x27;une station de ski"><g clip-path="url(#scrClip)"><image href="/assets/discover-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="/assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div></div><div class="end"></div>
+</section>
+
+<section class="film" id="film">
+  <h2>Le film, 51 secondes</h2>
+  <div class="vbox" id="vbox">
+    <img class="poster" src="/assets/video/poster-fr.jpg" alt="" loading="lazy" width="540" height="960">
+    <button class="play" id="play" aria-label="Voir le film"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir le film</span></button>
+  </div>
+  <div class="vmeta">51 s · 30 Mo · qualité maximale · son activé au toucher</div>
+</section>
+
+<section class="trust">
+  <h2>Tes données</h2>
+  <p><b>Tes données restent à toi.</b> Pas de compte SnowLine. Tes traces et tes données de santé restent sur ton iPhone. Si tu crées un groupe, seuls ta vitesse max, ton dénivelé et ton nombre de descentes sont partagés, via iCloud.</p>
+  <p><b>Apple Santé.</b> Tes journées de ski enregistrées comme séances, sans doublon avec ton Apple Watch.</p>
+  <p><b>Bulletins officiels.</b> Le risque d'avalanche vient uniquement des bulletins officiels, relayés tels quels.</p>
+</section>
+
+<section class="who">
+  <h2>Qui fait SnowLine</h2>
+  <div class="ph">[À remplir par toi : trois phrases vraies. Pourquoi tu as fait cette app, ce que tu skies, ta station.]</div>
+  <div class="sig">Jérémy</div>
+</section>
+
+<section class="fnd" id="fondateurs">
+  <h2>Installe-la avant le 30 janvier 2027. Premium t'est offert pendant trois saisons.</h2><p class="t">Merci d'être là dès le début. Toutes les fonctions Premium, actuelles et à venir, sont offertes aux skieurs qui installent SnowLine avant cette date, jusqu'à la fin de la saison 2028-29. Rien à faire : l'app le détecte seule.</p>
+  <div class="box"><div class="big" id="days" style="font-size:56px;padding:0;background:none">–</div><div id="daysL">jours pour la rejoindre</div>
+    <dl><div><dt>Installer avant le</dt><dd>30 janvier 2027</dd></div><div><dt>Premium offert jusqu'au</dt><dd>30 juin 2029</dd></div></dl></div>
+</section>
+
+<section class="final">
+  <h2>SnowLine est gratuit sur l'App Store.</h2>
+  <a class="btn" href="https://apps.apple.com/app/id6756065022">Télécharger sur l'App Store<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></a>
+</section>
+</main>
+
+<footer>
+  <nav><a href="https://docs.google.com/document/d/e/2PACX-1vSnsoZgtYN-3_lkDyb7fTX2PXovybGNBqEwcS3BSnWyj8yvfw0NoI3WBuFnuqIcidlgwled6H_ZYViv/pub">Confidentialité</a>
+  <a href="https://docs.google.com/document/d/e/2PACX-1vSuId4iDYalrUUMW-_-4UnKHNpwdC1z_Zo_DcnJ-lu4Xt_M_YsaD40OxRnaVyRq4CjM1W4uklYg_Fkj/pub">Aide</a>
+  <a href="mailto:snowlineapp@icloud.com">snowlineapp@icloud.com</a>
+  <a href="/index.html?desktop=1">Version ordinateur</a></nav>
+  <small>© 2026 Jeremy Muller · Apple, iPhone, Apple Watch et App Store sont des marques d'Apple Inc. Cartes : © Mapbox © OpenStreetMap contributors.</small>
+</footer>
+
+<div class="dock" id="dock" role="complementary"><img src="/assets/icon.png" alt="" width="44" height="44"><div><b>SnowLine</b><span>Gratuit · iPhone, Apple Watch</span></div><a href="https://apps.apple.com/app/id6756065022">Télécharger</a></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var bar=$("#bar"),dock=$("#dock"),cta=$("#cta");
+  var mt=$(".mtn");addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>40);mt.style.setProperty("--tint",Math.min(.62,scrollY/700).toFixed(2))},{passive:true});
+  if("IntersectionObserver" in window){new IntersectionObserver(function(e){dock.classList.toggle("on",!e[0].isIntersecting&&e[0].boundingClientRect.top<0)},{threshold:0}).observe(cta)}else{dock.classList.add("on")}
+  var end=Date.UTC(2027,0,29,22,59,59),n=Math.ceil((end-Date.now())/864e5);$("#days").textContent=n>0?n:"0";if(n<=0)$("#daysL").textContent="The founding offer has ended";
+  $("#play").addEventListener("click",function(){var b=$("#vbox"),v=document.createElement("video");v.src="/assets/video/snowline-fr.mp4";v.controls=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("webkit-playsinline","");v.poster="/assets/video/poster-fr.jpg";b.appendChild(v);$("#play").remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})});
+})();
+</script>
+</body>
+</html>
