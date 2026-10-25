@@ -135,7 +135,7 @@ html{background:#1d3d63}body{background:transparent}
 .mtn{position:fixed;left:0;right:0;top:0;height:100vh;height:100lvh;z-index:-1;background:#1d3d63 url(hero-m.webp) 50% 28%/cover no-repeat}
 .mtn:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,30,60,.28),rgba(8,30,60,0) 30%),rgba(206,224,244,var(--tint,0))}
 .hero{background:transparent}.hero .bg{display:none}
-.sheet{background:rgba(247,251,255,.68);-webkit-backdrop-filter:blur(26px) saturate(1.6);backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.6);border-bottom:0;box-shadow:0 -10px 40px rgba(8,30,60,.2)}
+.sheet{background:rgba(246,250,255,.84);-webkit-backdrop-filter:blur(26px) saturate(1.6);backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.6);border-bottom:0;box-shadow:0 -10px 40px rgba(8,30,60,.2)}
 .big,.also,.trust,.fnd,.rings,.band{background:rgba(246,250,254,.8)}
 .film,.who{background:rgba(228,239,250,.78)}
 .final{background:linear-gradient(165deg,rgba(13,79,184,.9),rgba(31,134,242,.84) 52%,rgba(127,208,255,.8))}
@@ -144,7 +144,7 @@ footer{background:rgba(228,239,250,.92)}
 .big .ph img{box-shadow:0 22px 50px rgba(8,30,60,.32),0 0 0 1px rgba(255,255,255,.4)}
 
 @media (min-width:700px){html{background:#c9d9ea}body{max-width:430px;margin:0 auto;box-shadow:0 0 70px rgba(11,37,64,.25)}
-.bar,.dock{left:50%;right:auto;width:100%;max-width:430px;margin-left:-215px}}
+.bar,.dock,.mtn{left:50%;right:auto;width:100%;max-width:430px;margin-left:-215px}}
 </style>
 </head>
 <body>
@@ -229,7 +229,7 @@ footer{background:rgba(228,239,250,.92)}
 <footer>
   <nav><a href="https://docs.google.com/document/d/e/2PACX-1vSnsoZgtYN-3_lkDyb7fTX2PXovybGNBqEwcS3BSnWyj8yvfw0NoI3WBuFnuqIcidlgwled6H_ZYViv/pub">Privacy</a>
   <a href="https://docs.google.com/document/d/e/2PACX-1vSuId4iDYalrUUMW-_-4UnKHNpwdC1z_Zo_DcnJ-lu4Xt_M_YsaD40OxRnaVyRq4CjM1W4uklYg_Fkj/pub">Help</a>
-  <a href="mailto:snowlineapp@icloud.com">snowlineapp@icloud.com</a>
+  <a href="#" id="mailme" rel="nofollow">Contact us</a>
   <a href="/en.html?desktop=1">Desktop version</a></nav>
   <small>© 2026 Jeremy Muller · Apple, iPhone, Apple Watch and App Store are trademarks of Apple Inc. Maps: © Mapbox © OpenStreetMap contributors.</small>
 </footer>
@@ -243,6 +243,7 @@ footer{background:rgba(228,239,250,.92)}
   var mt=$(".mtn");addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>40);mt.style.setProperty("--tint",Math.min(.62,scrollY/700).toFixed(2))},{passive:true});
   if("IntersectionObserver" in window){new IntersectionObserver(function(e){dock.classList.toggle("on",!e[0].isIntersecting&&e[0].boundingClientRect.top<0)},{threshold:0}).observe(cta)}else{dock.classList.add("on")}
   var end=Date.UTC(2027,0,29,22,59,59),n=Math.ceil((end-Date.now())/864e5);$("#days").textContent=n>0?n:"0";if(n<=0)$("#daysL").textContent="The founding offer has ended";
+  $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")});
   $("#play").addEventListener("click",function(){var b=$("#vbox"),v=document.createElement("video");v.src="/assets/video/snowline-en.mp4";v.controls=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("webkit-playsinline","");v.poster="/assets/video/poster-en.jpg";b.appendChild(v);$("#play").remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})});
 })();
 </script>
