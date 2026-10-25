@@ -6,7 +6,7 @@
 --speed:linear-gradient(90deg,#2d7bff 0%,#2ec4ff 34%,#ffd23f 68%,#ff4d3d 100%);
 --serif:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;background:#1d3d63}
+html{scroll-behavior:smooth;background:#1d3d63;overflow-x:hidden}
 body{font:18px/1.55 var(--sans);color:var(--navy);-webkit-font-smoothing:antialiased;background:transparent}
 a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .mtn{position:fixed;inset:0;z-index:-1;background:#1d3d63 url(/assets/hero.webp) 50% 45%/cover no-repeat}
@@ -20,7 +20,7 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button{fon
 .bar.solid{color:var(--navy);background:rgba(255,255,255,.86);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);box-shadow:0 1px 0 var(--line)}
 .bar .w{display:flex;align-items:center;height:100%;gap:40px;max-width:1320px}
 .brand{display:flex;align-items:center;gap:12px;font-size:24px}.brand img{width:34px;height:34px;border-radius:8px}
-.bar nav{display:flex;gap:30px;margin-left:auto;font-size:16px;font-weight:600}
+.bar nav a{white-space:nowrap}.bar nav{display:flex;gap:30px;margin-left:auto;font-size:16px;font-weight:600}
 .pill{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:22px;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
 .pill.o{border:1px solid currentColor}.pill.f{background:linear-gradient(135deg,#1665d8,#1f8bff);color:#fff;box-shadow:0 8px 20px rgba(22,101,216,.3)}
 /* hero */
@@ -35,12 +35,12 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button{fon
 .dev svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 30px 36px rgba(8,30,60,.45)) drop-shadow(0 5px 9px rgba(8,30,60,.32))}
 /* sections */
 .sec{padding:110px 0;background:rgba(246,250,254,.8)}.sec.ice{background:rgba(228,239,250,.78)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}.two.rev>:first-child{order:2}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:80px;align-items:center}.two.rev>:first-child{order:2}
 h2{font-size:44px;line-height:1.08;margin-bottom:18px}.sec p{color:var(--sub);font-size:19px;margin-bottom:14px}
 .pair{display:flex;gap:22px;justify-content:center;align-items:flex-start}.pair .dev{width:46%}.pair .dev:last-child{margin-top:60px}
 .tap{margin-top:34px;display:flex;align-items:center;gap:10px;color:var(--blue);font-weight:700}.tap svg{width:22px;height:22px}
 .solo .dev{width:min(100%,330px);margin:0 auto}
-.cuts{display:grid;grid-template-columns:repeat(5,1fr);gap:28px;margin-top:50px}
+.cuts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px;margin-top:50px}
 .mini h3{font-size:19px;line-height:1.25;margin:16px 0 6px}.mini p{font-size:15.5px!important;margin:0!important}
 .crop{height:250px;overflow:hidden;display:flex;justify-content:center;-webkit-mask-image:linear-gradient(#000 66%,transparent);mask-image:linear-gradient(#000 66%,transparent)}.crop .dev{width:168px}.crop .dev svg{filter:drop-shadow(0 10px 14px rgba(8,30,60,.28))}
 .film{padding:100px 0;color:#fff;background:linear-gradient(160deg,rgba(9,52,128,.93),rgba(22,101,216,.88) 60%,rgba(60,160,240,.82))}.film h2{color:#fff;font-size:56px}.film p{color:#dcebff;font-size:20px}.film .btn{background:#fff;color:var(--navy)}
@@ -57,6 +57,12 @@ h2{font-size:44px;line-height:1.08;margin-bottom:18px}.sec p{color:var(--sub);fo
 .final .btn{background:#fff;color:var(--navy);box-shadow:0 14px 34px rgba(6,40,96,.38)}
 footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(--sub)}footer .w{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}footer a{padding:6px 2px}footer small{flex-basis:100%;font-size:13px}
 .note{position:fixed;left:16px;bottom:16px;z-index:60;background:#fff3c4;border:1px dashed #c9a400;color:#5a4800;padding:8px 12px;border-radius:10px;font-size:13px}
+
+@media (max-width:1180px){.w{padding:0 28px}.bar .w{gap:22px}.bar nav{gap:20px;font-size:15px}
+.cuts{grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 24px}h2,.film h2{font-size:38px}.hero h1{font-size:46px}.film h2{font-size:42px}}
+@media (max-width:900px){.bar nav{display:none}.two,.two.rev{grid-template-columns:1fr;gap:44px}.two.rev>:first-child{order:0}
+.hero .w{grid-template-columns:1fr}.phones{height:520px}.phones .a{right:auto;left:8%;width:230px}.phones .b{right:8%;width:210px}
+.trust{grid-template-columns:1fr;gap:30px}.cuts{grid-template-columns:repeat(2,minmax(0,1fr))}.vbox{height:min(70vh,640px)}.sec,.film,.final{padding:72px 0}.big{font-size:72px}.note{font-size:12px}}
 </style></head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="scrClip"><path d="M376.80 17.00 L386.29 17.09 L392.64 17.37 L398.15 17.84 L403.15 18.49 L407.77 19.33 L412.10 20.36 L416.17 21.57 L420.01 22.96 L423.63 24.54 L427.05 26.30 L430.28 28.24 L433.32 30.37 L436.17 32.67 L438.84 35.16 L441.33 37.83 L443.63 40.68 L445.76 43.72 L447.70 46.95 L449.46 50.37 L451.04 53.99 L452.43 57.83 L453.64 61.90 L454.67 66.23 L455.51 70.85 L456.16 75.85 L456.63 81.36 L456.91 87.71 L457.00 97.20 L457.00 892.80 L456.91 902.29 L456.63 908.64 L456.16 914.15 L455.51 919.15 L454.67 923.77 L453.64 928.10 L452.43 932.17 L451.04 936.01 L449.46 939.63 L447.70 943.05 L445.76 946.28 L443.63 949.32 L441.33 952.17 L438.84 954.84 L436.17 957.33 L433.32 959.63 L430.28 961.76 L427.05 963.70 L423.63 965.46 L420.01 967.04 L416.17 968.43 L412.10 969.64 L407.77 970.67 L403.15 971.51 L398.15 972.16 L392.64 972.63 L386.29 972.91 L376.80 973.00 L97.20 973.00 L87.71 972.91 L81.36 972.63 L75.85 972.16 L70.85 971.51 L66.23 970.67 L61.90 969.64 L57.83 968.43 L53.99 967.04 L50.37 965.46 L46.95 963.70 L43.72 961.76 L40.68 959.63 L37.83 957.33 L35.16 954.84 L32.67 952.17 L30.37 949.32 L28.24 946.28 L26.30 943.05 L24.54 939.63 L22.96 936.01 L21.57 932.17 L20.36 928.10 L19.33 923.77 L18.49 919.15 L17.84 914.15 L17.37 908.64 L17.09 902.29 L17.00 892.80 L17.00 97.20 L17.09 87.71 L17.37 81.36 L17.84 75.85 L18.49 70.85 L19.33 66.23 L20.36 61.90 L21.57 57.83 L22.96 53.99 L24.54 50.37 L26.30 46.95 L28.24 43.72 L30.37 40.68 L32.67 37.83 L35.16 35.16 L37.83 32.67 L40.68 30.37 L43.72 28.24 L46.95 26.30 L50.37 24.54 L53.99 22.96 L57.83 21.57 L61.90 20.36 L66.23 19.33 L70.85 18.49 L75.85 17.84 L81.36 17.37 L87.71 17.09 L97.20 17.00Z"/></clipPath><g id="mkP"><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></defs></svg>
