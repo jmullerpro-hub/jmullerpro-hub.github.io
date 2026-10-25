@@ -260,7 +260,7 @@ footer small{display:block;margin-top:12px;font-size:12px}
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-<g id="mkP"><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="url(#mkG)"/><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></defs></svg>
+<g id="mkP"><path d="M0 34 L24 13.6 L38 21.1 L64 0 L100 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></defs></svg>
 
 <header id="hd">
   <a class="brand" href="#top" aria-label="SnowLine"><img src="assets/icon.png" alt=""><span class="lockup">SnowLine<svg viewBox="0 0 100 34" aria-hidden="true"><use href="#mkP"/></svg></span></a>
@@ -411,7 +411,7 @@ footer small{display:block;margin-top:12px;font-size:12px}
       <div><span>© 2026 Jeremy Muller</span>
         <a href="https://docs.google.com/document/d/e/2PACX-1vSnsoZgtYN-3_lkDyb7fTX2PXovybGNBqEwcS3BSnWyj8yvfw0NoI3WBuFnuqIcidlgwled6H_ZYViv/pub" data-i18n="l1">Confidentialité</a>
         <a href="https://docs.google.com/document/d/e/2PACX-1vSuId4iDYalrUUMW-_-4UnKHNpwdC1z_Zo_DcnJ-lu4Xt_M_YsaD40OxRnaVyRq4CjM1W4uklYg_Fkj/pub" data-i18n="l2">Aide</a>
-        <a href="mailto:snowlineapp@icloud.com">snowlineapp@icloud.com</a></div>
+        <a href="#" id="mailme" rel="nofollow" data-i18n="contact">Nous écrire</a></div>
       <small data-i18n="legal">Apple, iPhone, Apple Watch et App Store sont des marques d'Apple Inc. Cartes : © Mapbox © OpenStreetMap contributors.</small>
     </footer>
   </div>
@@ -453,7 +453,7 @@ const EN={
   oE:"Founding members",oT:"Install it before January 30, 2027. Premium is on us for three seasons.",
   oP:"Thanks for being here from the start. Every Premium feature, current and future, is free for skiers who install SnowLine before the deadline, until the end of the 2028-29 season. Nothing to do: the app detects it on its own.",
   dl:"days left to join",dl0:"The founding offer has ended",o1:"Install before",o1v:"January 30, 2027",o2:"Premium free until",o2v:"June 30, 2029",
-  ft:"Ready for your first run?",l1:"Privacy",l2:"Help",
+  ft:"Ready for your first run?",l1:"Privacy",l2:"Help",contact:"Contact us",
   legal:"Apple, iPhone, Apple Watch and App Store are trademarks of Apple Inc. Maps: © Mapbox © OpenStreetMap contributors."
 };
 const FR={};document.querySelectorAll("[data-i18n]").forEach(e=>FR[e.dataset.i18n]=e.textContent);
@@ -485,6 +485,7 @@ function setLang(l){
   try{localStorage.setItem("snowline-lang",l)}catch(e){}
   requestAnimationFrame(()=>{ $("#hero").classList.add("go") });
 }
+$("#mailme").onclick=e=>{e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")};
 $("#lang").onclick=()=>setLang(L==="en"?"fr":"en");
 
 /* ─── décompte fondateurs ─── */
