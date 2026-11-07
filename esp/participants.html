@@ -185,23 +185,27 @@ footer{padding-bottom:64px}footer .w{gap:8px 16px}
 }
 @media (max-width:360px){.brand .lockup{display:none}.pill.o{padding:0 12px}}
 
-/* vitrine : la vidéo comme un écran dans la vitrine d'un chalet-boutique de Tignes (bois sombre, pierre, laiton, neige) */
-.vitrine{position:relative;width:max-content;max-width:100%;margin:0 auto;padding-top:58px}
-.vitrine .roof{position:absolute;top:0;left:-40px;right:-40px;height:78px;background:linear-gradient(180deg,#f4f8fd 0,#dfe8f4 22px,#1a1511 23px,#0f0c0a 100%);clip-path:polygon(7% 0,93% 0,100% 100%,0 100%);box-shadow:0 18px 30px rgba(0,0,0,.45)}
-.vitrine .facade{position:relative;padding:58px 74px 0;background:repeating-linear-gradient(90deg,#33261c 0 42px,#1b130e 42px 44px),#251a13;box-shadow:0 40px 80px rgba(0,0,0,.55),inset 0 0 90px rgba(0,0,0,.55)}
-.vitrine .facade:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(255,190,110,.16),rgba(0,0,0,0) 62%),linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 22%);pointer-events:none}
-.vitrine .plate{position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:7px 28px 6px;background:#0d0b09;border:1px solid #b8985e;border-radius:2px;color:#d9bd86;font-family:var(--serif);font-size:17px;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;box-shadow:0 0 14px rgba(255,190,110,.25)}
-.vitrine .lamp{position:absolute;top:130px;width:10px;height:26px;border-radius:5px 5px 8px 8px;background:#ffd9a0;box-shadow:0 0 22px 8px rgba(255,190,110,.55),0 0 70px 26px rgba(255,170,90,.22)}
-.vitrine .lamp.l{left:30px}.vitrine .lamp.r{right:30px}
-.vitrine .win{position:relative;padding:9px;background:#08070a;border-radius:3px;box-shadow:0 0 0 2px #7a6038,0 0 0 4px #14100c,0 0 80px rgba(255,190,110,.28)}
-.vitrine .vbox{border-radius:1px;box-shadow:none;margin:0}
-.vitrine .reflet{position:absolute;inset:9px;z-index:6;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.16) 0,rgba(255,255,255,0) 26%,rgba(255,255,255,0) 62%,rgba(255,255,255,.09) 100%)}
-.vitrine .base{height:52px;margin:0 -74px;background:repeating-linear-gradient(90deg,#3b3834 0 74px,#26231f 74px 76px),#2d2a26;border-top:3px solid #0f0c0a;box-shadow:inset 0 14px 18px rgba(0,0,0,.5)}
-.vitrine .ledge{height:30px;margin:-8px -96px 0;position:relative;border-radius:60px 60px 10px 10px;background:linear-gradient(180deg,#f7fafe,#c5d4e8);box-shadow:0 18px 34px rgba(0,0,0,.4)}
-.vitrine .vc{position:absolute;left:12px;right:12px;bottom:12px;z-index:7;display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:24px;background:rgba(10,8,14,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;font-size:13px}
-.vc button{all:unset;cursor:pointer;display:grid;place-items:center;width:34px;height:34px;border-radius:50%}.vc button:focus-visible{outline:2px solid #fff}
-.vc svg{width:18px;height:18px}.vc input{flex:1;accent-color:#e63a85;min-width:0}.vc time{font-variant-numeric:tabular-nums;opacity:.85}
-@media (max-width:640px){.film{overflow-x:clip}.vitrine .vbox{height:auto;width:calc(100vw - 108px);max-width:330px}.vitrine .facade{padding:50px 22px 0}.vitrine .base{margin:0 -22px}.vitrine .ledge{margin:-8px -14px 0}.vitrine .roof{left:-16px;right:-16px}.vitrine .plate{font-size:12px;letter-spacing:.16em}.vitrine .lamp{display:none}}
+/* Aperçu vidéo intégré à la vitrine photographiée */
+.film{scroll-margin-top:84px;padding:58px 0 72px;color:#fff;background:linear-gradient(160deg,rgba(16,28,56,.95),rgba(37,27,72,.92) 58%,rgba(53,24,50,.9))}
+.film-head{max-width:1320px;margin:0 auto 28px;padding:0 40px;display:flex;align-items:end;justify-content:space-between;gap:32px}
+.film-head h2{color:#fff;font-size:46px;margin-bottom:10px}
+.film-head h2:after{content:"";display:block;width:72px;height:4px;border-radius:2px;margin-top:14px;background:var(--speed)}
+.film-head p{color:#e2def5;font-size:18px;margin:0;max-width:580px}
+.film-head .btn{flex:none}
+.scene-frame{position:relative;width:min(1320px,calc(100% - 64px));aspect-ratio:1672/941;margin:0 auto;overflow:hidden;border-radius:20px;isolation:isolate;background:#101018;box-shadow:0 38px 90px rgba(3,12,32,.48),0 0 0 1px rgba(255,255,255,.12)}
+.scene-background{position:absolute;inset:0;display:block}.scene-background img{display:block;width:100%;height:100%;object-fit:cover}
+.scene-screen.vbox{position:absolute;left:15.07%;top:26.35%;width:16.45%;height:54.3%;aspect-ratio:auto;margin:0;overflow:hidden;border-radius:0;background:#020203;box-shadow:0 0 22px rgba(140,175,255,.30),0 0 64px rgba(110,150,255,.16),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14);z-index:2}
+.scene-screen video,.scene-screen .poster{filter:brightness(.97) contrast(1.04) saturate(.95);width:100%;height:100%;object-fit:cover;transform:scale(1.015)}
+.scene-screen .play{z-index:6;opacity:0;background:transparent;transition:opacity .22s ease}
+.scene-screen:hover .play,.scene-screen .play:focus-visible{opacity:1;background:rgba(5,7,12,.12)}
+.scene-screen .play span{width:46px;height:46px;min-height:46px;padding:0;border:1px solid rgba(255,255,255,.72);border-radius:50%;display:grid;place-items:center;font-size:0;letter-spacing:0;background:rgba(10,15,24,.48);box-shadow:0 5px 20px rgba(0,0,0,.3);backdrop-filter:blur(8px)}
+.scene-screen .play svg{width:18px;height:18px;margin-left:2px;color:#151827}
+.scene-reflection{position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(117deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.1) 7%,transparent 21% 61%),linear-gradient(126deg,transparent 58%,rgba(255,222,183,.13) 67%,transparent 76%),linear-gradient(90deg,rgba(255,190,118,.1),transparent 7% 91%,rgba(181,208,235,.1)),linear-gradient(0deg,rgba(0,0,0,.06),transparent 23% 77%,rgba(255,255,255,.055)),radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(0,0,0,.42) 100%);}
+.scene-screen .vc{z-index:7;left:8px;right:8px;bottom:8px;gap:7px;padding:5px 8px;border-radius:18px;font-size:11px}
+.scene-screen .vc button{width:26px;height:26px;flex:none}
+.scene-screen .vc svg{width:15px;height:15px}
+.scene-screen .vc input{width:40px}
+@media (max-width:760px){.film-head{padding:0 20px;display:block;margin-bottom:20px}.film-head h2{font-size:34px}.film-head p{font-size:16px}.film-head .btn{margin-top:16px!important}.scene-frame{width:min(calc(100% - 28px),430px);aspect-ratio:416/740;border-radius:14px}.scene-screen.vbox{left:17.3%;top:15.3%;width:66.1%;height:69.1%}.scene-screen .vc time{display:none}}
 footer small:last-child{font-size:11px;opacity:.55}
 </style>
 </head>
@@ -230,11 +234,11 @@ footer small:last-child{font-size:11px;opacity:.55}
   <div><h3>Pride</h3><p>L'habillage European Snow Pride, aux couleurs de l'événement, que tu actives ou retires quand tu veux dans les Réglages.</p></div>
 </div></div></section>
 
-<section class="film" id="film"><div class="w two rev">
-  <div><h2>SnowLine en action</h2><p>L'aperçu de l'app, du tableau de bord au replay 3D. Mets le son.</p>
+<section class="film" id="film">
+  <div class="film-head"><div><h2>SnowLine en action</h2><p>L'aperçu de l'app, du tableau de bord au replay 3D. Mets le son.</p></div>
   <button class="btn" id="play2" style="margin-top:12px"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir l'aperçu</button></div>
-  <div class="vitrine"><div class="roof"></div><div class="facade"><div class="plate">SnowLine</div><i class="lamp l"></i><i class="lamp r"></i><div class="win"><div class="vbox" id="vbox"><img class="poster" src="./assets/poster-esp-fr.jpg?v=2" alt="" width="540" height="960"><button class="play" id="play"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir l'aperçu</span></button></div><div class="reflet"></div></div><div class="base"></div></div><div class="ledge"></div></div>
-</div></section>
+  <div class="scene-frame"><picture class="scene-background"><source media="(max-width:760px)" srcset="./assets/chalet-video-scene-mobile.jpg"><img src="./assets/chalet-video-scene.jpg" alt="Chalet-boutique SnowLine à Tignes au crépuscule, avec la rue et la montagne à droite" width="1672" height="941"></picture><div class="scene-screen vbox" id="vbox"><img class="poster" src="./assets/poster-esp-fr.jpg?v=3" alt="" width="540" height="960"><button class="play" id="play" aria-label="Lire l’aperçu"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg></span></button><div class="scene-reflection"></div></div></div>
+</section>
 
 <section class="sec night" id="fonctions"><div class="w two">
   <div><h2>Revis chaque descente sur le vrai relief</h2><p>Une caméra te suit dans la montagne avec ta vitesse en direct. Pose une maquette 3D de ta descente sur la table et fais-la tourner du bout du doigt.</p><p>Relief réel, trace du bleu au rouge selon la vitesse. Vues Poursuite, Amont et Haute, plus le mode Cinéma.</p></div>
@@ -286,7 +290,7 @@ footer small:last-child{font-size:11px;opacity:.55}
   addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>60);mt.style.setProperty("--tint",Math.min(.6,scrollY/800).toFixed(2))},{passive:true});
   
   $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")});
-  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="./assets/snowline-esp-fr.mp4";v.playsInline=true;v.setAttribute("playsinline","");v.disablePictureInPicture=true;v.disableRemotePlayback=true;v.setAttribute("controlslist","nofullscreen noremoteplayback nodownload");v.addEventListener("contextmenu",function(e){e.preventDefault()});v.poster="./assets/poster-esp-fr.jpg?v=2";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();
+  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="./assets/snowline-esp-fr.mp4";v.playsInline=true;v.setAttribute("playsinline","");v.disablePictureInPicture=true;v.disableRemotePlayback=true;v.setAttribute("controlslist","nofullscreen noremoteplayback nodownload");v.addEventListener("contextmenu",function(e){e.preventDefault()});v.poster="./assets/poster-esp-fr.jpg?v=3";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();
     var ic={play:'<svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>',pause:'<svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2h4v14H4zM10 2h4v14h-4z"/></svg>',on:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7v4h3l4 3V4L6 7z" fill="currentColor"/><path d="M13 6.5a4 4 0 010 5"/></svg>',off:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7v4h3l4 3V4L6 7z" fill="currentColor"/><path d="M13 7l4 4M17 7l-4 4"/></svg>'};
     var c=document.createElement("div");c.className="vc";c.innerHTML='<button type="button" aria-label="Lecture / pause">'+ic.pause+'</button><time>0:00</time><input type="range" min="0" max="1000" value="0" aria-label="Position dans la vidéo"><button type="button" aria-label="Son">'+ic.on+'</button>';b.appendChild(c);
     var bp=c.children[0],tm=c.children[1],rg=c.children[2],bm=c.children[3],fmt=function(t){t=Math.floor(t||0);return Math.floor(t/60)+":"+("0"+t%60).slice(-2)};
