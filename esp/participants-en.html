@@ -192,9 +192,9 @@ footer{padding-bottom:64px}footer .w{gap:8px 16px}
 .film-head h2:after{content:"";display:block;width:72px;height:4px;border-radius:2px;margin-top:14px;background:var(--speed)}
 .film-head p{color:#e2def5;font-size:18px;margin:0;max-width:580px}
 .film-head .btn{flex:none}
-.scene-frame{position:relative;width:min(1320px,calc(100% - 64px));aspect-ratio:1672/941;margin:0 auto;overflow:hidden;border-radius:20px;isolation:isolate;background:#101018;box-shadow:0 38px 90px rgba(3,12,32,.48),0 0 0 1px rgba(255,255,255,.12)}
+.scene-frame{position:relative;container-type:inline-size;width:min(1320px,calc(100% - 64px));aspect-ratio:1672/941;margin:0 auto;overflow:hidden;border-radius:20px;isolation:isolate;background:#101018;box-shadow:0 38px 90px rgba(3,12,32,.48),0 0 0 1px rgba(255,255,255,.12)}
 .scene-background{position:absolute;inset:0;display:block}.scene-background img{display:block;width:100%;height:100%;object-fit:cover}
-.scene-screen.vbox{position:absolute;left:15.07%;top:26.35%;width:16.45%;height:54.3%;aspect-ratio:auto;margin:0;overflow:hidden;border-radius:0;background:#020203;box-shadow:0 0 22px rgba(140,175,255,.30),0 0 64px rgba(110,150,255,.16),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14);z-index:2}
+.scene-screen.vbox{position:absolute;left:13.2%;top:27%;width:20%;height:53%;aspect-ratio:auto;margin:0;overflow:hidden;border-radius:0;background:#020203;box-shadow:0 0 0 .22cqw #2a2a30,0 0 0 .5cqw #0b0b0e,0 0 0 .95cqw #17171c,0 0 0 1.1cqw rgba(255,226,190,.38),0 0 0 1.35cqw #060608,0 1.2cqw 3cqw rgba(0,0,0,.6),0 0 3.2cqw rgba(140,175,255,.28),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14);z-index:2}
 .scene-screen video,.scene-screen .poster{filter:brightness(.97) contrast(1.04) saturate(.95);width:100%;height:100%;object-fit:cover;transform:scale(1.015)}
 .scene-screen .play{z-index:6;opacity:0;background:transparent;transition:opacity .22s ease}
 .scene-screen:hover .play,.scene-screen .play:focus-visible{opacity:1;background:rgba(5,7,12,.12)}
@@ -296,7 +296,7 @@ footer small:last-child{font-size:11px;opacity:.55}
     var bp=c.children[0],tm=c.children[1],rg=c.children[2],bm=c.children[3],fmt=function(t){t=Math.floor(t||0);return Math.floor(t/60)+":"+("0"+t%60).slice(-2)};
     bp.onclick=function(){v.paused?v.play():v.pause()};v.onclick=bp.onclick;v.onplay=function(){bp.innerHTML=ic.pause};v.onpause=function(){bp.innerHTML=ic.play};
     bm.onclick=function(){v.muted=!v.muted;bm.innerHTML=v.muted?ic.off:ic.on};
-    v.ontimeupdate=function(){tm.textContent=fmt(v.currentTime);if(v.duration)rg.value=Math.round(v.currentTime/v.duration*1000)};rg.oninput=function(){if(v.duration)v.currentTime=rg.value/1000*v.duration};
+    v.onended=function(){v.load();bp.innerHTML=ic.play};v.ontimeupdate=function(){tm.textContent=fmt(v.currentTime);if(v.duration)rg.value=Math.round(v.currentTime/v.duration*1000)};rg.oninput=function(){if(v.duration)v.currentTime=rg.value/1000*v.duration};
     v.play().catch(function(){})}
   $("#play").addEventListener("click",go);$("#play2").addEventListener("click",function(){if($("#play"))go()});
 })();
