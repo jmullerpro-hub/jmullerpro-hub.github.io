@@ -214,6 +214,22 @@ footer{padding-bottom:64px}footer .w{gap:8px 16px}
 @media (max-width:760px){.film-head{padding:0 20px;display:block;margin-bottom:20px}.film-head h2{font-size:34px}.film-head p{font-size:16px}.film-head .btn{margin-top:16px!important}.scene-frame{width:min(calc(100% - 28px),430px);aspect-ratio:416/740;border-radius:14px}.scene-screen.vbox{left:18.4%;top:15.9%;width:63.9%;height:67.9%}.scene-screen .vc time{display:none}}
 footer small:last-child{font-size:11px;opacity:.55}
 @media (max-width:760px){.scene-frame{width:auto;aspect-ratio:auto;overflow:visible;background:none;box-shadow:none;border-radius:0;container-type:normal}.scene-frame .scene-background{display:none}.scene-card{display:none}.scene-screen.vbox{position:relative;left:auto;top:auto;width:auto;height:min(68vh,560px);aspect-ratio:9/16;margin:0 auto;border-radius:26px;box-shadow:0 0 0 2px #17171c,0 0 0 3px rgba(255,226,190,.35),0 18px 50px rgba(0,0,0,.5),0 0 40px rgba(var(--amb,140,175,255),.35)}.scene-screen video,.scene-screen .poster{transform:none}.scene-reflection{display:none}}
+/* Bureau : scène épurée, écran centré à gauche, carte à droite (sans photo de chalet) */
+@media (min-width:761px){
+.scene-frame{container-type:normal;width:min(1180px,calc(100% - 64px));aspect-ratio:auto;overflow:visible;background:none;box-shadow:none;border-radius:0;display:grid;grid-template-columns:auto minmax(0,470px);justify-content:center;align-items:center;column-gap:clamp(48px,7vw,112px);padding:8px 0 20px}
+.scene-frame:before{content:"";position:absolute;left:-6%;right:-6%;top:-14%;bottom:-12%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 42% 60% at 33% 50%,rgba(var(--amb,140,175,255),.16),transparent 70%),radial-gradient(ellipse 36% 50% at 78% 55%,rgba(196,25,95,.10),transparent 70%)}
+.scene-frame .scene-background{display:none}
+.scene-screen.vbox{position:relative;left:auto;top:auto;width:auto;height:min(72vh,640px);aspect-ratio:9/16;border-radius:34px;box-shadow:0 0 0 2px #2a2a30,0 0 0 6px #0b0b0e,0 0 0 11px #17171c,0 0 0 12px rgba(255,226,190,.38),0 0 0 15px #060608,0 22px 50px rgba(0,0,0,.6),0 0 60px rgba(var(--amb,140,175,255),.42),0 0 150px rgba(var(--amb,140,175,255),.24),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14)}
+.scene-screen video,.scene-screen .poster{transform:none}
+.scene-reflection{border-radius:34px;opacity:.55}
+.scene-card{position:relative;left:auto;top:auto;width:auto;height:auto;padding:34px 36px;border-radius:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.scene-card .eyebrow{font-size:12px;margin:0 0 14px}
+.scene-card h3{font-size:34px;line-height:1.14;margin:0 0 16px}
+.scene-card h3:after{content:"";display:block;width:56px;height:4px;border-radius:2px;margin-top:16px;background:var(--speed)}
+.scene-card p{font-size:17px;line-height:1.5;margin:0}
+.scene-screen .vc{left:12px;right:12px;bottom:12px}
+}
+@media (min-width:761px) and (max-width:1000px){.scene-frame{grid-template-columns:auto minmax(0,1fr);column-gap:36px}.scene-card h3{font-size:26px}.scene-card p{font-size:15px}.scene-card{padding:26px}}
 </style>
 </head>
 <body>
