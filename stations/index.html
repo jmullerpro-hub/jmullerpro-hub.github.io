@@ -295,7 +295,12 @@ footer{background:#06162e;color:#9db8dd}footer a{color:#dbe8f9}
 <li>si vous le souhaitez, un témoignage publié avec votre accord écrit, et une mention de votre station sur nos réseaux.</li>
 </ul>
 <p style="margin-top:22px">Rien n'est obligatoire. Ce que nous ne demandons pas : de l'argent, une exclusivité, ni un engagement sur un volume. [À CONFIRMER : durée de la relation et modalités de la mention.]</p>
-</div></section>
+</div><div class="w" style="margin-top:44px">
+<p class="eyebrow">Sur nos réseaux</p>
+<h3>Une mention de votre station, si vous le souhaitez</h3>
+<p>Une story ou une publication par saison, avec le nom de votre station et votre compte. Rien n'est publié sans votre accord écrit, et vous pouvez demander son retrait à tout moment.</p>
+</div>
+</section>
 <section class="sec" id="questions"><div class="w"><div class="rv"><p class="eyebrow">Questions</p><h2 class="t">Questions fréquentes</h2></div><div class="faq rv">
   <details><summary>Combien de temps dure l'accès ?</summary><p>Une saison complète : l'accès court jusqu'au 30 juillet 2027, quelle que soit la date à laquelle chaque personne l'active.</p></details>
   <details><summary>Qui peut en profiter ?</summary><p>L'offre s'adresse aux personnes qui travaillent en station. Tous les salariés sont concernés : permanents et saisonniers, tous services.</p></details>
@@ -327,7 +332,7 @@ footer{background:#06162e;color:#9db8dd}footer a{color:#dbe8f9}
 <script>
 (function(){var $=function(s){return document.querySelector(s)},bar=$("#bar"),mt=$(".mtn");
   addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>60);mt.style.setProperty("--tint",Math.min(.6,scrollY/800).toFixed(2))},{passive:true});
-  var to=["snowlineapp","icloud.com"].join("@"),sub="Proposer SnowLine à mon équipe",body="Bonjour,\n\nJe suis (poste) à (nom de la station). Je souhaite proposer à mon équipe de découvrir SnowLine, une application française de ski pour iPhone et Apple Watch.\n\nPour cela, j'aimerais recevoir :\n- le code d'accès pour mon équipe ;\n- les informations pour l'expliquer simplement à mes salariés.\n\nNombre de personnes concernées environ : (nombre)\n\nJe suis intéressé(e) pour en discuter.\n\nCordialement,\n(prénom, nom, station)";
+  var to=["snowlineapp","icloud.com"].join("@"),sub="SnowLine pour vos équipes",body="Bonjour,\n\nJe m'appelle (prénom, nom). Je développe SnowLine, une application de ski française pour iPhone et Apple Watch.\n\nJe vous propose de la faire découvrir à votre équipe cet hiver. Premium est offert jusqu'au 30 juin 2029 pour ceux qui l'installent avant le 30 janvier 2027.\n\nSi l'idée vous intéresse, dites-moi simplement combien de personnes pourraient être concernées. Je vous envoie alors le code et une courte fiche à transmettre à l'équipe.\n\nEn échange, rien d'obligatoire : des retours de vos équipes, et, si vous le souhaitez, une mention de la station sur nos réseaux.\n\nMerci pour votre temps.\n(prénom, nom, station)";
   document.querySelectorAll("[data-mail]").forEach(function(b){b.addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+to+"?subject="+encodeURIComponent(sub)+"&body="+encodeURIComponent(body)})});
   $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+to});
   function go(){var b=$("#vbox"),v=document.createElement("video");v.src="../assets/snowline-stations-fr.mp4";v.controls=true;v.playsInline=true;v.poster="../assets/poster-stations-fr.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
