@@ -137,6 +137,45 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
 @media (max-width:900px){.bar nav{display:none}.two,.two.rev{grid-template-columns:1fr;gap:44px}.two.rev>:first-child{order:0}
 .trust{grid-template-columns:1fr;gap:30px}.cuts{grid-template-columns:repeat(2,minmax(0,1fr))}.vbox{height:min(70vh,640px)}.sec,.film,.final{padding:72px 0}.big{font-size:72px}.note{font-size:12px}}
 @media (max-width:760px){.hero .w{grid-template-columns:1fr}.hero h1{font-size:40px}.phones{height:520px;min-height:0}.phones .a{right:auto;left:8%;width:230px}.phones .b{right:8%;width:210px}}
+.film-head{max-width:1320px;margin:0 auto 28px;padding:0 40px;display:flex;align-items:end;justify-content:space-between;gap:32px}
+.film-head h2{color:#fff;font-size:46px;margin-bottom:10px}
+.film-head h2:after{content:"";display:block;width:72px;height:4px;border-radius:2px;margin-top:14px;background:var(--speed)}
+.film-head p{color:#e2def5;font-size:18px;margin:0;max-width:580px}
+.film-head .btn{flex:none}
+.scene-frame{position:relative;container-type:inline-size;width:min(1320px,calc(100% - 64px));aspect-ratio:1672/941;margin:0 auto;overflow:hidden;border-radius:20px;isolation:isolate;background:#101018;box-shadow:0 38px 90px rgba(3,12,32,.48),0 0 0 1px rgba(255,255,255,.12)}
+.scene-background{position:absolute;inset:0;display:block}.scene-background img{display:block;width:100%;height:100%;object-fit:cover}
+.scene-screen.vbox{position:absolute;left:14.3%;top:28.9%;width:17.8%;height:49.2%;aspect-ratio:auto;margin:0;overflow:hidden;border-radius:0;background:#020203;box-shadow:0 0 0 .22cqw #2a2a30,0 0 0 .5cqw #0b0b0e,0 0 0 .95cqw #17171c,0 0 0 1.1cqw rgba(255,226,190,.38),0 0 0 1.35cqw #060608,0 1.2cqw 3cqw rgba(0,0,0,.6),0 0 4cqw rgba(var(--amb,140,175,255),.42),0 0 11cqw rgba(var(--amb,140,175,255),.24),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14);z-index:2}
+.scene-screen video,.scene-screen .poster{filter:brightness(.97) contrast(1.04) saturate(.95);width:100%;height:100%;object-fit:cover;transform:scale(1.015)}
+.scene-screen .play{z-index:6;opacity:0;background:transparent;transition:opacity .22s ease}
+.scene-screen:hover .play,.scene-screen .play:focus-visible{opacity:1;background:rgba(5,7,12,.12)}
+.scene-screen .play span{width:46px;height:46px;min-height:46px;padding:0;border:1px solid rgba(255,255,255,.72);border-radius:50%;display:grid;place-items:center;font-size:0;letter-spacing:0;background:rgba(10,15,24,.48);box-shadow:0 5px 20px rgba(0,0,0,.3);backdrop-filter:blur(8px)}
+.scene-screen .play svg{width:18px;height:18px;margin-left:2px;color:#151827}
+.scene-reflection{position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(117deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.1) 7%,transparent 21% 61%),linear-gradient(126deg,transparent 58%,rgba(255,222,183,.13) 67%,transparent 76%),linear-gradient(90deg,rgba(255,190,118,.1),transparent 7% 91%,rgba(181,208,235,.1)),linear-gradient(0deg,rgba(0,0,0,.06),transparent 23% 77%,rgba(255,255,255,.055)),radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(0,0,0,.42) 100%);}
+.scene-card{position:absolute;left:41.6%;top:36.5%;width:28.4%;height:49%;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;z-index:4;padding:2.2cqi 2.8cqi;border-radius:2cqi;background:rgba(12,14,30,.6);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 2cqi 6cqi rgba(0,0,0,.35);color:#fff;text-align:left}
+.scene-card .eyebrow{font-size:1.05cqi;letter-spacing:.14em;text-transform:uppercase;opacity:.8;margin:0 0 1.1cqi}
+.scene-card h3{font-family:inherit;font-weight:600;font-size:3cqi;line-height:1.14;margin:0 0 1.6cqi}
+.scene-card p{font-size:1.5cqi;line-height:1.42;margin:0;opacity:.94}
+.scene-note-m{display:none}
+@media (max-width:760px){.scene-card{display:none}.scene-note-m{display:block;margin:18px 0 0;padding:16px 18px;border-radius:14px;background:rgba(12,14,30,.6);color:#fff;font-size:14px;line-height:1.45}.scene-note-m b{display:block;font-size:17px;margin:4px 0 6px}}
+.scene-screen .vc{z-index:7;left:8px;right:8px;bottom:8px;gap:7px;padding:5px 8px;border-radius:18px;font-size:11px}
+.scene-screen .vc button{width:26px;height:26px;flex:none}
+.scene-screen .vc svg{width:15px;height:15px}
+.scene-screen .vc input{width:40px}
+@media (max-width:760px){.film-head{padding:0 20px;display:block;margin-bottom:20px}.film-head h2{font-size:34px}.film-head p{font-size:16px}.film-head .btn{margin-top:16px!important}.scene-frame{width:min(calc(100% - 28px),430px);aspect-ratio:416/740;border-radius:14px}.scene-screen.vbox{left:18.4%;top:15.9%;width:63.9%;height:67.9%}.scene-screen .vc time{display:none}}
+@media (max-width:760px){.scene-frame{width:auto;aspect-ratio:auto;overflow:visible;background:none;box-shadow:none;border-radius:0;container-type:normal}.scene-frame .scene-background{display:none}.scene-card{display:none}.scene-screen.vbox{position:relative;left:auto;top:auto;width:auto;height:min(68vh,560px);aspect-ratio:9/16;margin:0 auto;border-radius:26px;box-shadow:0 0 0 2px #17171c,0 0 0 3px rgba(255,226,190,.35),0 18px 50px rgba(0,0,0,.5),0 0 40px rgba(var(--amb,140,175,255),.35)}.scene-screen video,.scene-screen .poster{transform:none}.scene-reflection{display:none}}
+.scene-frame{container-type:normal;width:min(1180px,calc(100% - 64px));aspect-ratio:auto;overflow:visible;background:none;box-shadow:none;border-radius:0;display:grid;grid-template-columns:auto minmax(0,470px);justify-content:center;align-items:center;column-gap:clamp(48px,7vw,112px);padding:8px 0 20px}
+.scene-frame:before{content:"";position:absolute;left:-6%;right:-6%;top:-14%;bottom:-12%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 42% 60% at 33% 50%,rgba(var(--amb,140,175,255),.16),transparent 70%),radial-gradient(ellipse 36% 50% at 78% 55%,rgba(196,25,95,.10),transparent 70%)}
+.scene-frame .scene-background{display:none}
+.scene-screen.vbox{position:relative;left:auto;top:auto;width:auto;height:min(72vh,640px);aspect-ratio:9/16;border-radius:34px;box-shadow:0 0 0 2px #2a2a30,0 0 0 6px #0b0b0e,0 0 0 11px #17171c,0 0 0 12px rgba(255,226,190,.38),0 0 0 15px #060608,0 22px 50px rgba(0,0,0,.6),0 0 60px rgba(var(--amb,140,175,255),.42),0 0 150px rgba(var(--amb,140,175,255),.24),inset 0 0 0 2px #050507,inset 0 0 0 3px rgba(255,236,213,.14)}
+.scene-screen video,.scene-screen .poster{transform:none}
+.scene-reflection{border-radius:34px;opacity:.55}
+.scene-card{position:relative;left:auto;top:auto;width:auto;height:auto;padding:34px 36px;border-radius:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.scene-card .eyebrow{font-size:12px;margin:0 0 14px}
+.scene-card h3{font-size:34px;line-height:1.14;margin:0 0 16px}
+.scene-card h3:after{content:"";display:block;width:56px;height:4px;border-radius:2px;margin-top:16px;background:var(--speed)}
+.scene-card p{font-size:17px;line-height:1.5;margin:0}
+.scene-screen .vc{left:12px;right:12px;bottom:12px}
+@media (min-width:761px) and (max-width:1000px){.scene-frame{grid-template-columns:auto minmax(0,1fr);column-gap:36px}.scene-card h3{font-size:26px}.scene-card p{font-size:15px}.scene-card{padding:26px}}
 </style>
 </head>
 <body>
@@ -157,11 +196,11 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
   <div class="phones"><div class="dev a"><svg viewBox="0 0 474 990" role="img" aria-label="SnowLine app dashboard"><g clip-path="url(#scrClip)"><image href="assets/dashboard-en.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div><div class="dev b"><svg viewBox="0 0 474 990" role="img" aria-label="Day summary: distance, vertical, time skiing down, falls"><g clip-path="url(#scrClip)"><image href="assets/days-en.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div>
 </div></section>
 
-<section class="film" id="film"><div class="w two rev">
-  <div><h2>SnowLine in action</h2><p>A look at the app, from the dashboard to the 3D replay. Turn the sound on.</p>
+<section class="film" id="film">
+  <div class="film-head"><div><h2>Your session, in pictures</h2><p>The app at a glance, from the dashboard to the 3D replay. Turn the sound on.</p></div>
   <button class="btn" id="play2" style="margin-top:12px"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Watch the preview</button></div>
-  <div class="vbox" id="vbox"><img class="poster" src="assets/video/poster-en.jpg" alt="" width="540" height="960"><button class="play" id="play"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Watch the preview</span></button></div>
-</div></section>
+  <div class="scene-frame"><picture class="scene-background"><source media="(max-width:760px)" srcset="assets/chalet-video-scene-mobile.jpg"><img src="assets/chalet-video-scene.jpg" alt="Mountain view at dusk, with the SnowLine app on screen" width="1672" height="941"></picture><div class="scene-screen vbox" id="vbox"><img class="poster" src="assets/video/poster-en.jpg" alt="" width="540" height="960"><button class="play" id="play" aria-label="Lire l’aperçu"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg></span></button><div class="scene-reflection"></div></div><div class="scene-card" role="note"><p class="eyebrow">SnowLine</p><h3>Your run, on the map and on your watch.</h3><p>Speed, vertical, 3D replay. Tap the screen to watch the preview.</p></div></div><div class="scene-note-m"><b>Your run, on the map and on your watch.</b>Speed, vertical, 3D replay.</div>
+</section>
 
 <section class="sec" id="fonctions"><div class="w two">
   <div><h2>Relive every run on real terrain</h2><p>A camera follows you down the mountain with your speed live. Put a 3D model of your run on the table and spin it with your fingertips.</p><p>Real terrain, a blue-to-red trail by speed. Chase, Side and Top views, plus Cinema mode.</p></div>
@@ -202,6 +241,7 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
   addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>60);mt.style.setProperty("--tint",Math.min(.6,scrollY/800).toFixed(2))},{passive:true});
   var n=Math.ceil((Date.UTC(2027,0,29,22,59,59)-Date.now())/864e5);$("#days").textContent=n>0?n:"0";
   $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")});
+  var p2=$("#play2");if(p2)p2.addEventListener("click",function(){if($("#play"))go()});
   function go(){var b=$("#vbox"),v=document.createElement("video");v.src="assets/video/snowline-en.mp4";v.controls=true;v.playsInline=true;v.poster="assets/video/poster-en.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
   $("#play").addEventListener("click",go);$("#play2").addEventListener("click",function(){if($("#play"))go()});
 })();
