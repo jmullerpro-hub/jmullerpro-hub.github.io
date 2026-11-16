@@ -138,6 +138,7 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
 @media (max-width:900px){.bar nav{display:none}.two,.two.rev{grid-template-columns:1fr;gap:44px}.two.rev>:first-child{order:0}
 .trust{grid-template-columns:1fr;gap:30px}.cuts{grid-template-columns:repeat(2,minmax(0,1fr))}.vbox{height:min(70vh,640px)}.sec,.film,.final{padding:72px 0}.big{font-size:72px}.note{font-size:12px}}
 @media (max-width:760px){.hero .w{grid-template-columns:1fr}.hero h1{font-size:40px}.phones{height:520px;min-height:0}.phones .a{right:auto;left:8%;width:230px}.phones .b{right:8%;width:210px}}
+.vbox{box-shadow:0 0 0 2px #2a2a30,0 0 0 6px #0b0b0e,0 0 0 11px #17171c,0 40px 90px rgba(3,20,50,.55)!important}
 </style>
 </head>
 <body>
@@ -161,7 +162,7 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
 <section class="film" id="film"><div class="w two rev">
   <div><h2>SnowLine en action</h2><p>L'aperçu de l'app, du tableau de bord au replay 3D. Mets le son.</p>
   <button class="btn" id="play2" style="margin-top:12px"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir l'aperçu</button></div>
-  <div class="vbox" id="vbox"><img class="poster" src="assets/video/poster-fr.jpg" alt="" width="540" height="960"><button class="play" id="play"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir l'aperçu</span></button></div>
+  <div class="vbox" id="vbox"><img class="poster" src="assets/reel-v8-poster.jpg" alt="" width="540" height="960"><button class="play" id="play"><span><svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 2l12 7-12 7z"/></svg>Voir l'aperçu</span></button></div>
 </div></section>
 
 <section class="sec" id="fonctions"><div class="w two">
@@ -176,7 +177,7 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
 </div></section>
 
 <section class="sec"><div class="w two">
-  <div><h2>Ta vitesse, tracée sur la montagne</h2><p>Du bleu au rouge, virage après virage, sur une carte de relief d'hiver avec les pistes et remontées de la station et leurs noms.</p><p>Altitudes de départ et d'arrivée de chaque piste et remontée. Cartes hors connexion : la station reste lisible sans réseau.</p></div>
+  <div><h2>Ta vitesse, tracée sur la montagne</h2><p>Du bleu au rouge, virage après virage, sur une carte de relief d'hiver avec les pistes et remontées de la station et leurs noms.</p><p>Altitudes de départ et d'arrivée de chaque piste et remontée. Cartes hors connexion : la station reste lisible sans réseau. Exporte chaque descente en GPX (Premium) pour Strava, Komoot ou Garmin.</p></div>
   <div class="solo"><div class="dev "><svg viewBox="0 0 474 990" role="img" aria-label="Carte d&#x27;hiver avec la vitesse tracée du bleu au rouge"><g clip-path="url(#scrClip)"><image href="assets/speedmap-fr.webp" x="17" y="17" width="440" height="956" preserveAspectRatio="xMidYMid slice"/></g><image href="assets/iphone-frame.webp?v=6" x="0" y="0" width="474" height="990"/></svg></div></div>
 </div></section>
 
@@ -203,7 +204,7 @@ footer{background:rgba(228,239,250,.94);padding:36px 0;font-size:15px;color:var(
   addEventListener("scroll",function(){bar.classList.toggle("solid",scrollY>60);mt.style.setProperty("--tint",Math.min(.6,scrollY/800).toFixed(2))},{passive:true});
   var n=Math.ceil((Date.UTC(2027,0,29,22,59,59)-Date.now())/864e5);$("#days").textContent=n>0?n:"0";
   $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")});
-  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="assets/video/snowline-fr.mp4";v.controls=true;v.playsInline=true;v.poster="assets/video/poster-fr.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
+  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="assets/reel-v10-fr.mp4";v.controls=true;v.playsInline=true;v.poster="assets/reel-v8-poster.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
   $("#play").addEventListener("click",go);$("#play2").addEventListener("click",function(){if($("#play"))go()});
 })();
 </script>
