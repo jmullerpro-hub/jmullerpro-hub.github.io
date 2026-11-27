@@ -251,7 +251,7 @@ footer .soc{display:inline-flex;gap:6px;align-items:center}footer .soc a{display
   var n=Math.ceil((Date.UTC(2027,0,29,22,59,59)-Date.now())/864e5);$("#days").textContent=n>0?n:"0";
   $("#mailme").addEventListener("click",function(e){e.preventDefault();location.href="mailto:"+["snowlineapp","icloud.com"].join("@")});
   var p2=$("#play2");if(p2)p2.addEventListener("click",function(){if($("#play"))go()});
-  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="assets/reel-v10-fr.mp4";v.controls=true;v.playsInline=true;v.poster="assets/poster-classique-fr.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
+  function go(){var b=$("#vbox"),v=document.createElement("video");v.src="assets/reel-v12-fr.mp4";v.controls=true;v.playsInline=true;v.poster="assets/poster-classique-fr.jpg";b.appendChild(v);var pl=$("#play");if(pl)pl.remove();var p=b.querySelector(".poster");if(p)p.remove();v.play().catch(function(){})}
   $("#play").addEventListener("click",go);$("#play2").addEventListener("click",function(){if($("#play"))go()});
 })();
 </script>
